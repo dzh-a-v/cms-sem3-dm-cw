@@ -15,7 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="sem3-coursework.cpp">
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="z8calc.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="z8calc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,0 +1,20 @@
+\babel@toc {russian}{}\relax 
+\contentsline {section}{Введение}{3}{section*.2}%
+\contentsline {section}{\numberline {1}Постановка задачи}{4}{section.0.1}%
+\contentsline {section}{\numberline {2}Математическое описание}{5}{section.0.2}%
+\contentsline {subsection}{\numberline {2.1}Исходная структура — «малая» конечная арифметика}{5}{subsection.0.2.1}%
+\contentsline {subsection}{\numberline {2.2}Изоморфизм с кольцом вычетов $\mathbb {Z}/8\mathbb {Z}$}{6}{subsection.0.2.2}%
+\contentsline {subsection}{\numberline {2.3}«Большая» конечная арифметика}{6}{subsection.0.2.3}%
+\contentsline {section}{\numberline {3}Особенности реализации}{8}{section.0.3}%
+\contentsline {subsection}{\numberline {3.1}Класс \code {Multiset}}{8}{subsection.0.3.1}%
+\contentsline {subsection}{\numberline {3.2}Класс \code {Interface}}{23}{subsection.0.3.2}%
+\contentsline {section}{\numberline {4}Результаты работы программы}{39}{section.0.4}%
+\contentsline {section}{Заключение}{45}{section*.21}%
+\contentsline {paragraph}{Плюсы программы.}{46}{section*.22}%
+\contentsline {paragraph}{Минусы программы.}{46}{section*.23}%
+\contentsline {paragraph}{Масштабирование.}{46}{section*.24}%
+\contentsline {section}{Список литературы}{48}{chapter*.25}%
+\contentsline {section}{Приложение 1. Файл Multiset.h}{49}{section*.26}%
+\contentsline {section}{Приложение 2. Файл Multiset.cpp}{50}{section*.27}%
+\contentsline {section}{Приложение 3. Файл Interface.h}{51}{section*.28}%
+\contentsline {section}{Приложение 4. Файл Interface.cpp}{52}{section*.29}%
