@@ -125,8 +125,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="z8calc.cpp" />
-    <ClCompile Include="z8calc.h" />
+    <ClCompile Include="z8.cpp" />
+    <ClCompile Include="z8.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
