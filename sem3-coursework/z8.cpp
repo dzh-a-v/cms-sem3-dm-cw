@@ -105,12 +105,27 @@ std::string Z8Number::decNumber(const std::string& num) {
     return normalize(res);
 }
 
+// --- Сравнение: x >= y ? ---
+bool Z8Number::greaterOrEqual(const std::string& x, const std::string& y) {
+    if (isEqual(x, y)) return true;
+    if (isEqual(y, "a")) return true;  // всё >= 0
+    if (isEqual(x, "a")) return false; // 0 < y (y != 0)
+    try {
+        subNumbers(x, y); // если не исключение — x >= y
+        return true;
+    }
+    catch (...) {
+        return false;
+    }
+}
+
 // --- сложение: x + y = x, затем y раз inc ---
 std::string Z8Number::addNumbers(const std::string& x, const std::string& y) {
     if (isEqual(y, "a")) return x;
-    std::string res = x;
+    std::string res = greaterOrEqual(x, y) ? x : y;
     std::string counter = "a";
-    while (!isEqual(counter, y)) {
+    std::string countTimes = greaterOrEqual(x, y) ? y : x;
+    while (!isEqual(counter, countTimes)) {
         res = incNumber(res);
         counter = incNumber(counter);
     }
@@ -133,13 +148,43 @@ std::string Z8Number::subNumbers(const std::string& x, const std::string& y) {
 // --- умножение: x * y = y раз сложить x ---
 std::string Z8Number::mulNumbers(const std::string& x, const std::string& y) {
     if (isEqual(x, "a") || isEqual(y, "a")) return "a";
-    std::string res = "a";
-    std::string counter = "a";
-    while (!isEqual(counter, y)) {
+    std::string res = greaterOrEqual(x, y) ? x : y;
+    std::string counter = "b";
+    std::string countTimes = greaterOrEqual(x, y) ? y : x;
+    while (!isEqual(counter, countTimes)) {
         res = addNumbers(res, x);
         counter = incNumber(counter);
     }
     return res;
+}
+
+// --- Деление с остатком ---
+std::string Z8Number::divNumbers(const std::string& x, const std::string& y) {
+    if (isEqual(y, "a")) {
+        throw std::domain_error("Division by zero");
+    }
+    if (isEqual(x, "a")) {
+        return "a";
+    }
+
+    std::string quotient = "a";
+    std::string remainder = x;
+
+    while (greaterOrEqual(remainder, y)) {
+        remainder = subNumbers(remainder, y);
+        quotient = incNumber(quotient);
+    }
+
+    if (isEqual(remainder, "a")) {
+        return quotient;
+    }
+    else {
+        return quotient + "." + remainder;
+    }
+}
+
+std::string Z8Number::divide(const Z8Number& divisor) const {
+    return divNumbers(digits, divisor.digits);
 }
 
 Z8Number Z8Number::operator+(const Z8Number& o) const {

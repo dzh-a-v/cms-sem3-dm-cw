@@ -12,6 +12,7 @@ public:
     Z8Number operator+(const Z8Number& other) const;
     Z8Number operator-(const Z8Number& other) const;
     Z8Number operator*(const Z8Number& other) const;
+    std::string divide(const Z8Number& divisor) const; // возвращает строку
 
     bool operator==(const Z8Number& other) const;
     std::string toString() const;
@@ -26,6 +27,8 @@ private:
     static std::string addNumbers(const std::string& x, const std::string& y);
     static std::string subNumbers(const std::string& x, const std::string& y);
     static std::string mulNumbers(const std::string& x, const std::string& y);
+    static std::string divNumbers(const std::string& x, const std::string& y);
+    static bool greaterOrEqual(const std::string& x, const std::string& y);
     static std::string normalize(const std::string& s);
     static void validate(const std::string& s);
     static bool isEqual(const std::string& a, const std::string& b);
