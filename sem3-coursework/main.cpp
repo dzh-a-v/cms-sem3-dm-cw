@@ -1,21 +1,65 @@
-﻿// main.cpp
+﻿#include "z8.h"
 #include <iostream>
 #include <string>
-#include "z8.h"
+#include <cctype>
 
 int main() {
-    std::cout << "=== Test ===\n\n";
+    std::cout << "=== Z8 Finite Arithmetic Calculator ===\n";
+    std::cout << "Operations: +  -  *  /\n";
+    std::cout << "Format: <num1> <op> <num2>   (e.g., bbb + ccc)\n";
+    std::cout << "Digits: 'a' to 'h' (1–8 digits)\n";
+    std::cout << "Type 'exit' to quit.\n\n";
 
-    // Одноразрядные операции
-    std::cout << "b + d = " << add('b', 'd') << " (expecting h)\n";
-    std::cout << "h - d = " << sub('h', 'd') << " (expecting b)\n";
-    std::cout << "a - b = " << sub('a', 'b') << " (expecting f)\n\n";
+    std::string line;
+    while (true) {
+        std::cout << "> ";
+        std::getline(std::cin, line);
+        if (line == "exit") break;
+        if (line.empty()) continue;
 
-    // Многоразрядные
-    std::cout << "bbb + ccc = " << addStrings("bbb", "ccc") << "\n";
-    std::cout << "a - b = " << subStrings("a", "b") << " (expecting fffffff)\n";
-    std::cout << "bb - b = " << subStrings("bb", "b") << "\n";
-    std::cout << "a - a = " << subStrings("a", "a") << "\n";
+        std::string num1_str, num2_str;
+        char op;
+        if (!ParseExpression(line, num1_str, op, num2_str)) {
+            std::cout << "Invalid format...\n\n";
+            continue;
+        }
 
+        if (!IsValidNumber(num1_str) || !IsValidNumber(num2_str)) {
+            std::cout << "Invalid digits...\n\n";
+            continue;
+        }
+
+        Z8Number a(num1_str), b(num2_str);
+        try {
+            if (op == '+') {
+                std::cout << "Result: "; print_number((a + b).str()); std::cout << "\n\n";
+            }
+            else if (op == '-') {
+                std::cout << "Result: "; print_number((a - b).str()); std::cout << "\n\n";
+            }
+            else if (op == '*') {
+                std::cout << "Result: "; print_number((a * b).str()); std::cout << "\n\n";
+            }
+            else if (op == '/') {
+                auto [q, r] = a / b;
+                std::string qs = q.str();
+                if (qs == "all") {
+                    std::cout << "Result: 0/0 — any value.\n\n";
+                }
+                else if (qs == "no") {
+                    std::cout << "Result: Division by zero.\n\n";
+                }
+                else {
+                    std::cout << "Result: "; print_number(qs);
+                    std::cout << "\nRemainder: "; print_number(r.str());
+                    std::cout << "\n\n";
+                }
+            }
+        }
+        catch (...) {
+            std::cout << "Calculation error.\n\n";
+        }
+    }
+    std::cout << "Goodbye!\n";
     return 0;
 }
