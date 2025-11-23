@@ -5,19 +5,10 @@
 #include <vector>
 #include <utility>
 
-// Базовые функции
-char plus_one(char c);
-
-// Работа с цифрами
+// Операции над цифрами
 std::pair<char, char> add_digits(char x, char y);
-std::pair<char, char> subtract_digits(char x, char y);
 std::pair<char, char> multiply_digits(char x, char y);
 std::vector<char> divide_digits(char x, char y);
-
-// Вспомогательные
-int steps_from_a(char c);
-bool is_greater_or_equal(const std::string& a, const std::string& b);
-std::string normalize_number(const std::string& s);
 
 // Класс числа
 class Z8Number {

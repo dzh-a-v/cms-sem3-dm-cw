@@ -5,9 +5,8 @@
 int main() {
     std::cout << "=== Z8 Finite Arithmetic Calculator ===\n";
     std::cout << "Operations: +  -  *  /\n";
-    std::cout << "Format: <num1> <op> <num2>   (e.g., ddd * ccc)\n";
+    std::cout << "Format: <num1> <op> <num2>   (e.g., bbb + ccc)\n";
     std::cout << "Digits: 'a' to 'h' (1–8 digits)\n";
-    std::cout << "Max value: ffffffff. Overflow -> 'OVERFLOW'\n";
     std::cout << "Type 'exit' to quit.\n\n";
 
     std::string line;
@@ -31,35 +30,29 @@ int main() {
         Z8Number a(num1_str), b(num2_str);
         try {
             if (op == '+') {
-                Z8Number r = a + b;
-                std::cout << "Result: "; print_number(r.str()); std::cout << "\n\n";
-            }
-            else if (op == '-') {
-                Z8Number r = a - b;
-                std::cout << "Result: "; print_number(r.str()); std::cout << "\n\n";
-            }
-            else if (op == '*') {
-                Z8Number r = a * b;
-                std::cout << "Result: "; print_number(r.str()); std::cout << "\n\n";
-            }
-            else if (op == '/') {
-                auto [q, rem] = a / b;
+                Z8Number res = a + b;
+                std::cout << "Result: "; print_number(res.str()); std::cout << "\n\n";
+            } else if (op == '-') {
+                Z8Number res = a - b;
+                std::cout << "Result: "; print_number(res.str()); std::cout << "\n\n";
+            } else if (op == '*') {
+                Z8Number res = a * b;
+                std::cout << "Result: "; print_number(res.str()); std::cout << "\n\n";
+            } else if (op == '/') {
+                auto [q, r] = a / b;
                 std::string qs = q.str();
                 if (qs == "ALL") {
-                    std::cout << "Result: 0/0 — any value.\n\n";
-                }
-                else if (qs == "NO") {
-                    std::cout << "Result: Division by zero.\n\n";
-                }
-                else {
+                    std::cout << "Result: Division by zero (0/0). Any value is valid.\n\n";
+                } else if (qs == "NO") {
+                    std::cout << "Result: Division by zero (x/0). Undefined.\n\n";
+                } else {
                     std::cout << "Result: "; print_number(qs);
-                    std::cout << "\nRemainder: "; print_number(rem.str());
+                    std::cout << "\nRemainder: "; print_number(r.str());
                     std::cout << "\n\n";
                 }
             }
-        }
-        catch (...) {
-            std::cout << "Error.\n\n";
+        } catch (...) {
+            std::cout << "Error during calculation.\n\n";
         }
     }
     std::cout << "Goodbye!\n";
