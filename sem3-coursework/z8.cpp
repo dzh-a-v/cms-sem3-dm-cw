@@ -143,10 +143,9 @@ bool greaterOrEqual(const Z8Number& X, const Z8Number& Y) {
 // sum: x + y = x, then y times inc
 std::string Z8Number::addNumbers(const std::string& x, const std::string& y) {
     if (isEqual(y, "a")) return x;
-    std::string res = greaterOrEqual(x, y) ? x : y;
+    std::string res = x;
     std::string counter = "a";
-    std::string countTimes = greaterOrEqual(x, y) ? y : x;
-    while (!isEqual(counter, countTimes)) {
+    while (!isEqual(counter, y)) {
         res = incNumber(res);
         counter = incNumber(counter);
     }
@@ -169,10 +168,9 @@ std::string Z8Number::subNumbers(const std::string& x, const std::string& y) {
 // mul: x * y = y times add x to 0 (y-1 times to itself)
 std::string Z8Number::mulNumbers(const std::string& x, const std::string& y) {
     if (isEqual(x, "a") || isEqual(y, "a")) return "a";
-    std::string res = greaterOrEqual(x, y) ? x : y;
+    std::string res = x;
     std::string counter = "b";
-    std::string countTimes = greaterOrEqual(x, y) ? y : x;
-    while (!isEqual(counter, countTimes)) {
+    while (!isEqual(counter, y)) {
         res = addNumbers(res, x);
         counter = incNumber(counter);
     }
