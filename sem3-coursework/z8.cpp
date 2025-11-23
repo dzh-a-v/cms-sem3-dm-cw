@@ -1,191 +1,159 @@
 ﻿#include "z8.h"
 #include <algorithm>
-#include <cctype>
 #include <stdexcept>
 
-// --- Вспомогательные отображения (изоморфизм с Z_8) ---
-int Z8Number::charToIndex(char c) {
+// --- базовые операции на символах ---
+char Z8Number::inc(char c) {
     switch (c) {
-    case 'a': return 0;
-    case 'b': return 1;
-    case 'd': return 2;
-    case 'h': return 3;
-    case 'c': return 4;
-    case 'e': return 5;
-    case 'g': return 6;
-    case 'f': return 7;
-    default: throw std::invalid_argument("Invalid digit: " + std::string(1, c));
+    case 'a': return 'b';
+    case 'b': return 'd';
+    case 'c': return 'e';
+    case 'd': return 'h';
+    case 'e': return 'g';
+    case 'f': return 'a';
+    case 'g': return 'f';
+    case 'h': return 'c';
+    default: throw std::invalid_argument("Invalid digit");
     }
 }
 
-char Z8Number::indexToChar(int idx) {
-    const char order[8] = { 'a','b','d','h','c','e','g','f' };
-    idx = (idx % 8 + 8) % 8; // нормализация
-    return order[idx];
+char Z8Number::dec(char c) {
+    switch (c) {
+    case 'a': return 'f';
+    case 'b': return 'a';
+    case 'c': return 'h';
+    case 'd': return 'b';
+    case 'e': return 'c';
+    case 'f': return 'g';
+    case 'g': return 'e';
+    case 'h': return 'd';
+    default: throw std::invalid_argument("Invalid digit");
+    }
 }
 
-// --- Валидация строки ---
-void Z8Number::validateString(const std::string& s) {
-    if (s.empty())
-        throw std::invalid_argument("Empty string is not allowed");
-    if (s.size() > 8)
-        throw std::invalid_argument("Number cannot exceed 8 digits");
+// --- нормализация: убрать лишние 'a' в начале ---
+std::string Z8Number::normalize(const std::string& s) {
+    size_t i = 0;
+    while (i < s.length() - 1 && s[i] == 'a')
+        ++i;
+    return s.substr(i);
+}
+
+// --- сравнение строк ---
+bool Z8Number::isEqual(const std::string& a, const std::string& b) {
+    return normalize(a) == normalize(b);
+}
+
+// --- валидация ---
+void Z8Number::validate(const std::string& s) {
+    if (s.empty()) throw std::invalid_argument("Empty number");
+    if (s.size() > 8) throw std::invalid_argument("More than 8 digits");
     for (char c : s) {
         if (c != 'a' && c != 'b' && c != 'c' && c != 'd' &&
             c != 'e' && c != 'f' && c != 'g' && c != 'h')
-            throw std::invalid_argument("Invalid character: " + std::string(1, c));
+            throw std::invalid_argument("Invalid character");
     }
 }
 
-// --- Нормализация: убрать ведущие 'a', но оставить хотя бы один символ ---
-std::string Z8Number::normalize(const std::string& s) {
-    size_t start = 0;
-    while (start < s.size() - 1 && s[start] == 'a') // оставляем последний, даже если 'a'
-        ++start;
-    return s.substr(start);
-}
-
-// --- Конструкторы ---
+// --- конструкторы ---
 Z8Number::Z8Number() : digits("a") {}
-
 Z8Number::Z8Number(const std::string& s) {
-    validateString(s);
+    validate(s);
     digits = normalize(s);
 }
 
-// --- Сравнение ---
+// --- операторы сравнения ---
 bool Z8Number::operator==(const Z8Number& other) const {
-    return normalize(digits) == normalize(other.digits);
+    return isEqual(digits, other.digits);
 }
 
-// --- Приватные утилиты ---
-std::string Z8Number::padLeft(const std::string& s, size_t len, char pad) {
-    if (s.length() >= len) return s;
-    return std::string(len - s.length(), pad) + s;
-}
-
-// --- Сложение (многоразрядное) ---
-std::string Z8Number::addImpl(const std::string& x, const std::string& y) {
-    size_t len = std::max(x.size(), y.size());
-    std::string a = padLeft(x, len, 'a');
-    std::string b = padLeft(y, len, 'a');
-
-    std::string result;
-    bool carry = false;
-
-    for (int i = len - 1; i >= 0; --i) {
-        int sum = charToIndex(a[i]) + charToIndex(b[i]) + (carry ? 1 : 0);
-        carry = (sum >= 8);
-        result.push_back(indexToChar(sum % 8));
-    }
-
-    if (carry) {
-        result.push_back('b'); // b = 1
-    }
-
-    std::reverse(result.begin(), result.end());
-    result = normalize(result);
-
-    if (result.size() > 8)
-        throw OverflowError();
-
-    return result;
-}
-
-// --- Сравнение для вычитания ---
-bool Z8Number::lessThanOrEqual(const std::string& a, const std::string& b) {
-    std::string na = normalize(a);
-    std::string nb = normalize(b);
-    if (na.size() != nb.size())
-        return na.size() < nb.size();
-    return na <= nb; // лексикографически, т.к. порядок символов согласован с Z8
-}
-
-// --- Вычитание (предполагаем, что a >= b) ---
-std::string Z8Number::subtractImpl(const std::string& x, const std::string& y) {
-    if (!lessThanOrEqual(y, x))
-        throw std::domain_error("Negative results are not supported");
-
-    size_t len = x.size();
-    std::string a = x;
-    std::string b = padLeft(y, len, 'a');
-
-    std::string result;
-    bool borrow = false;
-
-    for (int i = len - 1; i >= 0; --i) {
-        int ai = charToIndex(a[i]);
-        int bi = charToIndex(b[i]);
-
-        if (borrow) {
-            if (ai == 0) {
-                ai = 8;
-            }
-            ai--;
-            borrow = false;
+// --- инкремент многоразрядного числа ---
+std::string Z8Number::incNumber(const std::string& num) {
+    std::string res = num;
+    int i = static_cast<int>(res.size()) - 1;
+    while (i >= 0) {
+        char old = res[i];
+        res[i] = inc(old);
+        if (old != 'f') { // f -> a, значит, был перенос
+            break;
         }
-
-        if (ai < bi) {
-            ai += 8;
-            borrow = true;
+        if (i == 0) {
+            res = 'b' + res; // добавляем новый разряд
+            if (res.size() > 8)
+                throw OverflowError();
+            break;
         }
-
-        int diff = ai - bi;
-        result.push_back(indexToChar(diff));
+        --i;
     }
-
-    std::reverse(result.begin(), result.end());
-    result = normalize(result);
-
-    if (result.size() > 8)
-        throw OverflowError();
-
-    return result;
+    return normalize(res);
 }
 
-// --- Умножение (школьный алгоритм) ---
-std::string Z8Number::multiplyImpl(const std::string& x, const std::string& y) {
-    if (x == "a" || y == "a")
-        return "a";
-
-    std::string result = "a";
-
-    for (int i = y.size() - 1; i >= 0; --i) {
-        char y_digit = y[i];
-        int y_val = charToIndex(y_digit);
-
-        // Умножаем x на y_digit
-        std::string term = "a";
-        for (int k = 0; k < y_val; ++k) {
-            term = addImpl(term, x);
+// --- декремент многоразрядного числа ---
+std::string Z8Number::decNumber(const std::string& num) {
+    if (isEqual(num, "a"))
+        throw std::domain_error("Cannot decrement zero");
+    std::string res = num;
+    int i = static_cast<int>(res.size()) - 1;
+    while (i >= 0) {
+        char old = res[i];
+        res[i] = dec(old);
+        if (old != 'a') { // a -> f, значит, нужно занять
+            break;
         }
-
-        // Сдвигаем влево на (y.size() - 1 - i) позиций (добавляем 'a' справа)
-        term += std::string(y.size() - 1 - i, 'a');
-
-        result = addImpl(result, term);
-
-        if (result.size() > 8)
-            throw OverflowError();
+        --i;
     }
-
-    return normalize(result);
+    return normalize(res);
 }
 
-// --- Публичные операторы ---
-Z8Number Z8Number::operator+(const Z8Number& other) const {
-    return Z8Number(addImpl(digits, other.digits));
+// --- сложение: x + y = x, затем y раз inc ---
+std::string Z8Number::addNumbers(const std::string& x, const std::string& y) {
+    if (isEqual(y, "a")) return x;
+    std::string res = x;
+    std::string counter = "a";
+    while (!isEqual(counter, y)) {
+        res = incNumber(res);
+        counter = incNumber(counter);
+    }
+    return res;
 }
 
-Z8Number Z8Number::operator-(const Z8Number& other) const {
-    return Z8Number(subtractImpl(digits, other.digits));
+// --- вычитание: x - y = x, затем y раз dec ---
+std::string Z8Number::subNumbers(const std::string& x, const std::string& y) {
+    if (isEqual(y, "a")) return x;
+    if (isEqual(x, y)) return "a";
+    std::string res = x;
+    std::string counter = "a";
+    while (!isEqual(counter, y)) {
+        res = decNumber(res);
+        counter = incNumber(counter);
+    }
+    return res;
 }
 
-Z8Number Z8Number::operator*(const Z8Number& other) const {
-    return Z8Number(multiplyImpl(digits, other.digits));
+// --- умножение: x * y = y раз сложить x ---
+std::string Z8Number::mulNumbers(const std::string& x, const std::string& y) {
+    if (isEqual(x, "a") || isEqual(y, "a")) return "a";
+    std::string res = "a";
+    std::string counter = "a";
+    while (!isEqual(counter, y)) {
+        res = addNumbers(res, x);
+        counter = incNumber(counter);
+    }
+    return res;
 }
 
-// --- Вывод ---
+Z8Number Z8Number::operator+(const Z8Number& o) const {
+    return Z8Number(addNumbers(digits, o.digits));
+}
+
+Z8Number Z8Number::operator-(const Z8Number& o) const {
+    return Z8Number(subNumbers(digits, o.digits));
+}
+
+Z8Number Z8Number::operator*(const Z8Number& o) const {
+    return Z8Number(mulNumbers(digits, o.digits));
+}
+
 std::string Z8Number::toString() const {
     return digits;
 }

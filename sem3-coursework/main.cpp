@@ -3,40 +3,20 @@
 #include "z8.h"
 
 int main() {
-    std::string input1, input2, op;
-    std::cout << "Enter first number (up to 8 digits, e.g. f): ";
-    std::cin >> input1;
-    std::cout << "Enter operation (+, -, *): ";
-    std::cin >> op;
-    std::cout << "Enter second number: ";
-    std::cin >> input2;
+    std::string s1, s2, op;
+    std::cout << "Num1: "; std::cin >> s1;
+    std::cout << "Op (+, -, *): "; std::cin >> op;
+    std::cout << "Num2: "; std::cin >> s2;
 
     try {
-        Z8Number a(input1);
-        Z8Number b(input2);
-        Z8Number res;
-
-        if (op == "+") {
-            res = a + b;
-        }
-        else if (op == "-") {
-            res = a - b;
-        }
-        else if (op == "*") {
-            res = a * b;
-        }
-        else {
-            std::cerr << "Unsupported operation\n";
-            return 1;
-        }
-
-        std::cout << "Result: " << res.toString() << std::endl;
-
+        Z8Number a(s1), b(s2);
+        Z8Number res = (op == "+") ? a + b :
+            (op == "-") ? a - b :
+            (op == "*") ? a * b :
+            (throw std::invalid_argument("Bad op"), Z8Number());
+        std::cout << "Result: " << res.toString() << "\n";
     }
     catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        return 1;
+        std::cerr << "Error: " << e.what() << "\n";
     }
-
-    return 0;
 }

@@ -6,41 +6,34 @@
 
 class Z8Number {
 public:
-    // Конструкторы
-    Z8Number();                             // ноль: "a"
-    explicit Z8Number(const std::string& s); // из строки, например "ba"
+    Z8Number();
+    explicit Z8Number(const std::string& s);
 
-    // Арифметические операторы
     Z8Number operator+(const Z8Number& other) const;
     Z8Number operator-(const Z8Number& other) const;
     Z8Number operator*(const Z8Number& other) const;
 
-    // Сравнение
     bool operator==(const Z8Number& other) const;
-    bool operator!=(const Z8Number& other) const { return !(*this == other); }
-
-    // Вывод
     std::string toString() const;
 
 private:
-    std::string digits; // всегда без ведущих 'a', кроме случая "a"
+    std::string digits;
 
-    // Вспомогательные функции
-    static int charToIndex(char c);
-    static char indexToChar(int idx);
-    static void validateString(const std::string& s);
+    static char inc(char c);
+    static char dec(char c);
+    static std::string incNumber(const std::string& num);
+    static std::string decNumber(const std::string& num);
+    static std::string addNumbers(const std::string& x, const std::string& y);
+    static std::string subNumbers(const std::string& x, const std::string& y);
+    static std::string mulNumbers(const std::string& x, const std::string& y);
     static std::string normalize(const std::string& s);
-    static std::string addImpl(const std::string& x, const std::string& y);
-    static std::string subtractImpl(const std::string& x, const std::string& y);
-    static std::string multiplyImpl(const std::string& x, const std::string& y);
-    static bool lessThanOrEqual(const std::string& a, const std::string& b);
-    static std::string padLeft(const std::string& s, size_t len, char pad = 'a');
+    static void validate(const std::string& s);
+    static bool isEqual(const std::string& a, const std::string& b);
 };
 
-// Исключение для переполнения
 class OverflowError : public std::overflow_error {
 public:
-    OverflowError() : std::overflow_error("Result exceeds 8 digits") {}
+    OverflowError() : std::overflow_error("Number exceeds 8 digits") {}
 };
 
-#endif // Z8_H
+#endif
