@@ -5,32 +5,28 @@
 #include <vector>
 #include <utility>
 
-// === Символы и таблицы ===
-extern const char SYMBOLS[8];           // 'a','b','c','d','e','f','g','h'
-extern const char ADD_TABLE[8][8];
-extern const char ADD_CARRY[8][8];
-extern const char MUL_TABLE[8][8];
-extern const char MUL_CARRY[8][8];
-
-// === Базовые операции ===
+// Базовые функции
 char plus_one(char c);
-int symbol_index(char c);                 // только для lookup в таблицах!
-char symbol_from_index(int idx);
 
+// Работа с цифрами
 std::pair<char, char> add_digits(char x, char y);
 std::pair<char, char> subtract_digits(char x, char y);
 std::pair<char, char> multiply_digits(char x, char y);
 std::vector<char> divide_digits(char x, char y);
 
+// Вспомогательные
+int steps_from_a(char c);
 bool is_greater_or_equal(const std::string& a, const std::string& b);
 std::string normalize_number(const std::string& s);
 
+// Класс числа
 class Z8Number {
-    std::string digits_;
+    std::string digits_; // little-endian: [0] — младший разряд
 
 public:
     explicit Z8Number(const std::string& input);
     std::string str() const;
+    bool is_overflow() const;
 
     Z8Number operator+(const Z8Number& other) const;
     Z8Number operator-(const Z8Number& other) const;
@@ -38,9 +34,8 @@ public:
     std::pair<Z8Number, Z8Number> operator/(const Z8Number& other) const;
 };
 
+// Ввод/вывод
 void print_number(const std::string& num);
-
-// === Функции для main.cpp ===
 bool IsValidNumber(const std::string& s);
 bool ParseExpression(const std::string& line, std::string& num1, char& op, std::string& num2);
 
