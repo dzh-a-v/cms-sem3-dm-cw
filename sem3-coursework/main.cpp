@@ -12,13 +12,18 @@ int main() {
     std::cout << "aaab * c = " << (Z8Number("aaab") + Z8Number("c")).toString() << "\n";
     std::cout << "f - b = " << (Z8Number("f") - Z8Number("b")).toString() << "\n";
     std::cout << "ba - d = " << (Z8Number("ba") - Z8Number("d")).toString() << "\n";
-    std::cout << "ba / c = " << Z8Number("ba").divide(Z8Number("c")) << "\n";
+    std::cout << "e + e = " << (Z8Number("e") + Z8Number("e")).toString() << "\n";
+    std::cout << "ba / e = " << Z8Number("ba").divide(Z8Number("e")) << "\n";
     std::cout << "-ba + b = "; calculate(Z8Number("-ba"), Z8Number("b"), "+");
     std::cout << "-b + f = "; calculate(Z8Number("-b"), Z8Number("f"), "+");
     std::cout << "-ba - -ff = "; calculate(Z8Number("-ba"), Z8Number("-ff"), "-");
     std::cout << "b - d = "; calculate(Z8Number("b"), Z8Number("d"), "-");
     std::cout << "-a + a = "; calculate(Z8Number("-a"), Z8Number("a"), "+");
     std::cout << "ba * baa = "; calculate(Z8Number("ba"), Z8Number("baa"), "*");
+    std::cout << "-a - -a ="; calculate(Z8Number("-a"), Z8Number("-a"), "-");
+    std::cout << "-a + -a ="; calculate(Z8Number("-a"), Z8Number("-a"), "+");
+    std::cout << "-a * a ="; calculate(Z8Number("-a"), Z8Number("a"), "*");
+    std::cout << "-a * baa ="; calculate(Z8Number("-a"), Z8Number("baa"), "*");
     while (true) {
         std::cout << "Enter the problem (format: <num> <operation> <num>; nums from -ffffffff to ffffffff):\n>> ";
         std::cin >> s1;

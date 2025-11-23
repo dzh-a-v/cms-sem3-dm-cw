@@ -229,25 +229,26 @@ std::string Z8Number::toString() const {
 }
 
 void calculate(const Z8Number& a, const Z8Number& b, std::string op) {
+    std::string result;
     if (!(a.isNegative) && (!(b.isNegative))) {
         try {
             if (op == "+") {
-                std::cout << "Result: " << (a + b).toString() << "\n";
+                result = (a + b).toString();
             }
             else if (op == "-") {
                 try {
-                    std::cout << "Result: " << (a - b).toString() << "\n";
+                    result = (a - b).toString();
                 }
                 catch (...) {
-                    std::cout << "Result: -" << (b - a).toString() << "\n";
+                    result = "-" + (b - a).toString();
                 }
             }
             else if (op == "*") {
-                if (greater(a, b)) std::cout << "Result: " << (a * b).toString() << "\n";
-                else std::cout << "Result: " << (b * a).toString() << "\n";
+                if (greater(a, b)) result = (a * b).toString();
+                else result = (b * a).toString();
             }
             else if (op == "/") {
-                std::cout << "Result: " << a.divide(b) << "\n";
+                result = a.divide(b);
             }
             else {
                 std::cerr << "Unknown operator\n";
@@ -269,18 +270,19 @@ void calculate(const Z8Number& a, const Z8Number& b, std::string op) {
         }
         try {
             if (op == "+") {
-                if (greater(neg, pos)) std::cout << "Result: -" << (neg - pos).toString() << "\n";
-                else std::cout << "Result: " << (pos - neg).toString() << "\n";
+                if (greater(neg, pos)) result = "-" + (neg - pos).toString();
+                else result = (pos - neg).toString();
             }
             else if (op == "-") {
-                std::cout << "Result: " << (neg + pos).toString() << "\n";
+                result = (neg + pos).toString();
             }
             else if (op == "*") {
-                std::cout << "Result: -" << (a * b).toString() << "\n";
+                if (a == Z8Number("a") || a == Z8Number("-a") || b == Z8Number("a") || b == Z8Number("-a")) result = "a";
+                else result = "-" + (a * b).toString();
             }
             else if (op == "/") {
-                if (a == Z8Number("a")) std::cout << "Result: " << a.divide(b) << "\n";
-                else std::cout << "Result: -" << a.divide(b) << "\n";
+                if (a == Z8Number("a")) result = a.divide(b);
+                else result = "-" + a.divide(b);
             }
             else {
                 std::cerr << "Unknown operator\n";
@@ -293,21 +295,26 @@ void calculate(const Z8Number& a, const Z8Number& b, std::string op) {
     else {
         try {
             if (op == "+") {
-                std::cout << "Result: -" << (a + b).toString() << "\n";
+                if ((a == Z8Number("a") || a == Z8Number("-a")) && (b == Z8Number("a") || b == Z8Number("-a"))) result = "a";
+                else result = "-" + (a + b).toString();
             }
             else if (op == "-") {
-                try {
-                    std::cout << "Result: -" << (a - b).toString() << "\n";
-                }
-                catch (...) {
-                    std::cout << "Result: " << (b - a).toString() << "\n";
+                if (a == b) result = "a";
+                else if ((a == Z8Number("a") || a == Z8Number("-a")) && (b == Z8Number("a") || b == Z8Number("-a"))) result = "a";
+                else {
+                    try {
+                        result = "-" + (a - b).toString();
+                    }
+                    catch (...) {
+                        result = (b - a).toString();
+                    }
                 }
             }
             else if (op == "*") {
-                std::cout << "Result: " << (a * b).toString() << "\n";
+                result = (a * b).toString();
             }
             else if (op == "/") {
-                std::cout << "Result: " << a.divide(b) << "\n";
+                result = a.divide(b);
             }
             else {
                 std::cerr << "Unknown operator\n";
@@ -317,4 +324,5 @@ void calculate(const Z8Number& a, const Z8Number& b, std::string op) {
             std::cerr << "Error: " << e.what() << "\n";
         }
     }
+    std::cout << result << std::endl;
 }
