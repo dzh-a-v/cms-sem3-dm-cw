@@ -1,60 +1,42 @@
-﻿#include "z8.h"
-#include <iostream>
+﻿#include <iostream>
 #include <string>
+#include "z8.h"
 
 int main() {
-    std::cout << "=== Z8 Finite Arithmetic Calculator ===\n";
-    std::cout << "Operations: +  -  *  /\n";
-    std::cout << "Format: <num1> <op> <num2>   (e.g., bbb + ccc)\n";
-    std::cout << "Digits: 'a' to 'h' (1–8 digits)\n";
-    std::cout << "Type 'exit' to quit.\n\n";
+    std::string input1, input2, op;
+    std::cout << "Enter first number (up to 8 digits, e.g. f): ";
+    std::cin >> input1;
+    std::cout << "Enter operation (+, -, *): ";
+    std::cin >> op;
+    std::cout << "Enter second number: ";
+    std::cin >> input2;
 
-    std::string line;
-    while (true) {
-        std::cout << "> ";
-        std::getline(std::cin, line);
-        if (line == "exit") break;
-        if (line.empty()) continue;
+    try {
+        Z8Number a(input1);
+        Z8Number b(input2);
+        Z8Number res;
 
-        std::string num1_str, num2_str;
-        char op;
-        if (!ParseExpression(line, num1_str, op, num2_str)) {
-            std::cout << "Invalid format. Use: number operator number\n\n";
-            continue;
+        if (op == "+") {
+            res = a + b;
         }
-        if (!IsValidNumber(num1_str) || !IsValidNumber(num2_str)) {
-            std::cout << "Numbers must be 1-8 chars from 'a' to 'h'.\n\n";
-            continue;
+        else if (op == "-") {
+            res = a - b;
+        }
+        else if (op == "*") {
+            res = a * b;
+        }
+        else {
+            std::cerr << "Unsupported operation\n";
+            return 1;
         }
 
-        Z8Number a(num1_str), b(num2_str);
-        try {
-            if (op == '+') {
-                Z8Number res = a + b;
-                std::cout << "Result: "; print_number(res.str()); std::cout << "\n\n";
-            } else if (op == '-') {
-                Z8Number res = a - b;
-                std::cout << "Result: "; print_number(res.str()); std::cout << "\n\n";
-            } else if (op == '*') {
-                Z8Number res = a * b;
-                std::cout << "Result: "; print_number(res.str()); std::cout << "\n\n";
-            } else if (op == '/') {
-                auto [q, r] = a / b;
-                std::string qs = q.str();
-                if (qs == "ALL") {
-                    std::cout << "Result: Division by zero (0/0). Any value is valid.\n\n";
-                } else if (qs == "NO") {
-                    std::cout << "Result: Division by zero (x/0). Undefined.\n\n";
-                } else {
-                    std::cout << "Result: "; print_number(qs);
-                    std::cout << "\nRemainder: "; print_number(r.str());
-                    std::cout << "\n\n";
-                }
-            }
-        } catch (...) {
-            std::cout << "Error during calculation.\n\n";
-        }
+        std::cout << "Result: " << res.toString() << std::endl;
+
     }
-    std::cout << "Goodbye!\n";
+    catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
+    }
+
     return 0;
 }

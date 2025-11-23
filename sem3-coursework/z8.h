@@ -2,32 +2,45 @@
 #define Z8_H
 
 #include <string>
-#include <vector>
-#include <utility>
+#include <stdexcept>
 
-// Операции над цифрами
-std::pair<char, char> add_digits(char x, char y);
-std::pair<char, char> multiply_digits(char x, char y);
-std::vector<char> divide_digits(char x, char y);
-
-// Класс числа
 class Z8Number {
-    std::string digits_; // little-endian: [0] — младший разряд
-
 public:
-    explicit Z8Number(const std::string& input);
-    std::string str() const;
-    bool is_overflow() const;
+    // Конструкторы
+    Z8Number();                             // ноль: "a"
+    explicit Z8Number(const std::string& s); // из строки, например "ba"
 
+    // Арифметические операторы
     Z8Number operator+(const Z8Number& other) const;
     Z8Number operator-(const Z8Number& other) const;
     Z8Number operator*(const Z8Number& other) const;
-    std::pair<Z8Number, Z8Number> operator/(const Z8Number& other) const;
+
+    // Сравнение
+    bool operator==(const Z8Number& other) const;
+    bool operator!=(const Z8Number& other) const { return !(*this == other); }
+
+    // Вывод
+    std::string toString() const;
+
+private:
+    std::string digits; // всегда без ведущих 'a', кроме случая "a"
+
+    // Вспомогательные функции
+    static int charToIndex(char c);
+    static char indexToChar(int idx);
+    static void validateString(const std::string& s);
+    static std::string normalize(const std::string& s);
+    static std::string addImpl(const std::string& x, const std::string& y);
+    static std::string subtractImpl(const std::string& x, const std::string& y);
+    static std::string multiplyImpl(const std::string& x, const std::string& y);
+    static bool lessThanOrEqual(const std::string& a, const std::string& b);
+    static std::string padLeft(const std::string& s, size_t len, char pad = 'a');
 };
 
-// Ввод/вывод
-void print_number(const std::string& num);
-bool IsValidNumber(const std::string& s);
-bool ParseExpression(const std::string& line, std::string& num1, char& op, std::string& num2);
+// Исключение для переполнения
+class OverflowError : public std::overflow_error {
+public:
+    OverflowError() : std::overflow_error("Result exceeds 8 digits") {}
+};
 
 #endif // Z8_H
