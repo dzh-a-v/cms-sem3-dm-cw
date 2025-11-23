@@ -245,7 +245,8 @@ void calculate(const Z8Number& a, const Z8Number& b, std::string op) {
                 }
             }
             else if (op == "*") {
-                std::cout << "Result: " << (a * b).toString() << "\n";
+                if (greater(a, b)) std::cout << "Result: " << (a * b).toString() << "\n";
+                else std::cout << "Result: " << (b * a).toString() << "\n";
             }
             else if (op == "/") {
                 std::cout << "Result: " << a.divide(b) << "\n";
