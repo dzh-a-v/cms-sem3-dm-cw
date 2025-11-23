@@ -14,6 +14,11 @@ int main() {
         std::cout << "f - b = " << (Z8Number("f") - Z8Number("b")).toString() << "\n";
         std::cout << "ba - d = " << (Z8Number("ba") - Z8Number("d")).toString() << "\n";
         std::cout << "ba / c = " << Z8Number("ba").divide(Z8Number("c")) << "\n";
+        std::cout << "-ba + b = "; calculate(Z8Number("-ba"), Z8Number("b"), "+");
+        std::cout << "-b + f = "; calculate(Z8Number("-b"), Z8Number("f"), "+");
+        std::cout << "-ba - -ff = "; calculate(Z8Number("-ba"), Z8Number("-ff"), "-");
+        std::cout << "b - d = "; calculate(Z8Number("b"), Z8Number("d"), "-");
+        std::cout << "-a + a = "; calculate(Z8Number("-a"), Z8Number("a"), "+");
         std::cout << "Num1: "; std::cin >> s1;
         std::cout << "Op (+, -, *, /): "; std::cin >> op;
         std::cout << "Num2: "; std::cin >> s2;

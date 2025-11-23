@@ -33,6 +33,8 @@ private:
     static std::string mulNumbers(const std::string& x, const std::string& y);
     static std::string divNumbers(const std::string& x, const std::string& y);
     static bool greaterOrEqual(const std::string& x, const std::string& y);
+    friend bool greaterOrEqual(const Z8Number& x, const Z8Number& y);
+    friend bool greater(const Z8Number& x, const Z8Number& y);
     static std::string normalize(const std::string& s);
     static void validate(const std::string& s);
     static bool isEqual(const std::string& a, const std::string& b);
