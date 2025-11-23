@@ -5,30 +5,20 @@
 int main() {
     std::string s1, s2, op;
     while (true) {
+        std::cout << "=== DEBUG ===" << std::endl;
+        std::cout << "a + b = " << (Z8Number("a") + Z8Number("b")).toString() << "\n";
+        std::cout << "f + b = " << (Z8Number("f") + Z8Number("b")).toString() << "\n";
+        std::cout << "a * d = " << (Z8Number("a") * Z8Number("d")).toString() << "\n";
+        std::cout << "ff * f = " << (Z8Number("ff") + Z8Number("f")).toString() << "\n";
+        std::cout << "aaab * c = " << (Z8Number("aaab") + Z8Number("c")).toString() << "\n";
+        std::cout << "f - b = " << (Z8Number("f") - Z8Number("b")).toString() << "\n";
+        std::cout << "ba - d = " << (Z8Number("ba") - Z8Number("d")).toString() << "\n";
+        std::cout << "ba / c = " << Z8Number("ba").divide(Z8Number("c")) << "\n";
         std::cout << "Num1: "; std::cin >> s1;
         std::cout << "Op (+, -, *, /): "; std::cin >> op;
         std::cout << "Num2: "; std::cin >> s2;
 
-        try {
-            Z8Number a(s1), b(s2);
-            if (op == "+") {
-                std::cout << "Result: " << (a + b).toString() << "\n";
-            }
-            else if (op == "-") {
-                std::cout << "Result: " << (a - b).toString() << "\n";
-            }
-            else if (op == "*") {
-                std::cout << "Result: " << (a * b).toString() << "\n";
-            }
-            else if (op == "/") {
-                std::cout << "Result: " << a.divide(b) << "\n";
-            }
-            else {
-                std::cerr << "Unknown operator\n";
-            }
-        }
-        catch (const std::exception& e) {
-            std::cerr << "Error: " << e.what() << "\n";
-        }
+        Z8Number a(s1), b(s2);
+        calculate(a, b, op);
     }
 }

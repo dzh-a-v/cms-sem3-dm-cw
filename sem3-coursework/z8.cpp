@@ -1,6 +1,11 @@
 ﻿#include "z8.h"
 #include <algorithm>
 #include <stdexcept>
+#include <iostream>
+
+bool Z8Number::getNeg() const {
+    return isNegative;
+}
 
 // --- базовые операции на символах ---
 char Z8Number::inc(char c) {
@@ -33,7 +38,7 @@ char Z8Number::dec(char c) {
 
 // --- нормализация: убрать лишние 'a' в начале ---
 std::string Z8Number::normalize(const std::string& s) {
-    size_t i = 0;
+    size_t i = s[0] == '-' ? 1 : 0;
     while (i < s.length() - 1 && s[i] == 'a')
         ++i;
     return s.substr(i);
@@ -47,19 +52,24 @@ bool Z8Number::isEqual(const std::string& a, const std::string& b) {
 // --- валидация ---
 void Z8Number::validate(const std::string& s) {
     if (s.empty()) throw std::invalid_argument("Empty number");
-    if (s.size() > 8) throw std::invalid_argument("More than 8 digits");
+    if (s.size() > 8 && s[0] != '-' || s.size() > 9) throw std::invalid_argument("More than 8 digits");
     for (char c : s) {
         if (c != 'a' && c != 'b' && c != 'c' && c != 'd' &&
-            c != 'e' && c != 'f' && c != 'g' && c != 'h')
+            c != 'e' && c != 'f' && c != 'g' && c != 'h' && c != '-')
             throw std::invalid_argument("Invalid character");
     }
 }
 
 // --- конструкторы ---
-Z8Number::Z8Number() : digits("a") {}
+Z8Number::Z8Number() : digits("a"), isNegative(false) {}
 Z8Number::Z8Number(const std::string& s) {
     validate(s);
     digits = normalize(s);
+    isNegative = s[0] == '-' ? true : false;
+}
+Z8Number::Z8Number(const Z8Number& other) {
+    digits = other.digits;
+    isNegative = other.isNegative;
 }
 
 // --- операторы сравнения ---
@@ -199,6 +209,97 @@ Z8Number Z8Number::operator*(const Z8Number& o) const {
     return Z8Number(mulNumbers(digits, o.digits));
 }
 
+Z8Number& Z8Number::operator=(const Z8Number& other) {
+    digits = other.digits;
+    isNegative = other.isNegative;
+    return *this;
+}
+
 std::string Z8Number::toString() const {
     return digits;
+}
+
+void calculate(const Z8Number& a, const Z8Number& b, std::string op) {
+    if (!(a.isNegative) && (!(b.isNegative))) {
+        try {
+            if (op == "+") {
+                std::cout << "Result: " << (a + b).toString() << "\n";
+            }
+            else if (op == "-") {
+                std::cout << "Result: " << (a - b).toString() << "\n";
+            }
+            else if (op == "*") {
+                std::cout << "Result: " << (a * b).toString() << "\n";
+            }
+            else if (op == "/") {
+                std::cout << "Result: " << a.divide(b) << "\n";
+            }
+            else {
+                std::cerr << "Unknown operator\n";
+            }
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << "\n";
+        }
+    }
+    else if ((a.isNegative) && (!(b.isNegative)) || (!(a.isNegative)) && (b.isNegative)) {
+        Z8Number A, B;
+        if ((a.isNegative) && (!(b.isNegative))) {
+            A = a;
+            B = b;
+        }
+        else {
+            A = b;
+            B = a;
+        }
+        try {
+            if ((a.isNegative) && (!(b.isNegative))) {
+                if (op == "+") {
+                    std::cout << "Result: " << (A - B).toString() << "\n";
+                }
+                else if (op == "-") {
+                    std::cout << "Result: " << (A + B).toString() << "\n";
+                }
+                else if (op == "*") {
+                    std::cout << "Result: -" << (A * B).toString() << "\n";
+                }
+                else if (op == "/") {
+                    std::cout << "Result: -" << A.divide(B) << "\n";
+                }
+                else {
+                    std::cerr << "Unknown operator\n";
+                }
+            }
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << "\n";
+        }
+    }
+    else {
+        try {
+            if (op == "+") {
+                std::cout << "Result: -" << (a + b).toString() << "\n";
+            }
+            else if (op == "-") {
+                try {
+                    std::cout << "Result: " << (a - b).toString() << "\n";
+                }
+                catch (...) {
+                    std::cout << "Result: " << (b - a).toString() << "\n";
+                }
+            }
+            else if (op == "*") {
+                std::cout << "Result: " << (a * b).toString() << "\n";
+            }
+            else if (op == "/") {
+                std::cout << "Result: " << a.divide(b) << "\n";
+            }
+            else {
+                std::cerr << "Unknown operator\n";
+            }
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << "\n";
+        }
+    }
 }
