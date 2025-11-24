@@ -244,16 +244,18 @@
 		
 		\newpage
 		\section{Особенности реализации}
-		Программа состоит из двух классов: \code{Z8Number} и \code{OverflowError}.
+		%Программа состоит из двух классов: \code{Z8Number} и \code{OverflowError}.
 		
-		Класс \code{Z8Number} содержит в себе поля для хранения данных о числе и функции для проведения операций над ними.
+		\subsection{Реализация алгебраической логики}
 		
-		Класс \code{OverflowError} содержит в себе код ошибку, вызываемую при переполнении (ограничение на число в рамках данной структуры составляет 8 разрядов).
+		Математическая логика программы реализована в классе \code{Z8Number}. Он содержит в себе поля для хранения данных о числе и функции для проведения операций над ними.
+		
+		%Класс \code{OverflowError} содержит в себе код ошибку, вызываемую при переполнении (ограничение на число в рамках данной структуры составляет 8 разрядов).
 		
 		В рамках данного описания числами будут называться элементы структуры $Z_8$ (\code{a}, \code{b}, ..., \code{f}).
 		
 		
-		\subsection{Класс \protect\code{Z8Number}}
+		%\subsection{Класс \protect\code{Z8Number}}
 		
 		\begin{itemize}
 			\item \textbf{Метод \code{getNeg}}  
@@ -622,17 +624,41 @@ void calculate(const Z8Number& a, const Z8Number& b, std::string op) {
 			\end{lstlisting}
 		\end{itemize}
 		
-		\subsection{Класс \protect\code{OverflowError}}
+		\subsection{Реализация консольного меню}
 		
-		Данный класс содержит только метод OverflowError, вызывающий ошибку std::overflow\_error с текстом "Number exceeds 8 digits".
+		Консольное меню реализовано в файле \code{main.py}. При запуске программа выводит приветственное сообщение, после чего до каждого ввода пользователя отображает допустимые границы чисел и формат ввода.
 		
-		\textbf{Код:}
+		\textbf{Код тела main:}
 		\begin{lstlisting}[language=C++]
-class OverflowError : public std::overflow_error {
-	public:
-	OverflowError() : std::overflow_error("Number exceeds 8 digits") {}
-};
+std::cout << "Hello!" << std::endl;
+std::string s1, s2, op;
+while (true) {
+	std::cout << "Enter the problem (format: <num> <operation> <num>; nums from -ffffffff to ffffffff):\n>> ";
+	std::cin >> s1;
+	std::cin >> op;
+	std::cin >> s2;
+		
+	try {
+		Z8Number a(s1), b(s2);
+		calculate(a, b, op);
+	}
+	catch (...) {
+		std::cerr << "Error: incorrect input" << std::endl;
+	}
+}
 		\end{lstlisting}
+		
+		%\subsection{Класс \protect\code{OverflowError}}
+		
+		%Данный класс содержит только метод OverflowError, вызывающий ошибку %std::overflow\_error с текстом "Number exceeds 8 digits".
+		
+		%\textbf{Код:}
+		%\begin{lstlisting}[language=C++]
+%class OverflowError : public std::overflow_error {
+%	public:
+%	OverflowError() : std::overflow_error("Number exceeds 8 digits") {}
+%};
+%		\end{lstlisting}
 		
 		
 		

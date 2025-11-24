@@ -9,16 +9,16 @@
 \contentsline {subsubsection}{Вычитание}{7}{section*.6}%
 \contentsline {subsubsection}{Деление}{7}{section*.7}%
 \contentsline {subsubsection}{Отрицательные числа и операции с ними}{7}{section*.8}%
-\contentsline {subsection}{\numberline {2.3}Ограничения}{8}{subsection.0.2.3}%
+\contentsline {subsection}{\numberline {2.3}Ограничения}{9}{subsection.0.2.3}%
 \contentsline {section}{\numberline {3}Особенности реализации}{10}{section.0.3}%
-\contentsline {subsection}{\numberline {3.1}Класс \code {Z8Number}}{10}{subsection.0.3.1}%
-\contentsline {subsection}{\numberline {3.2}Класс \code {OverflowError}}{21}{subsection.0.3.2}%
+\contentsline {subsection}{\numberline {3.1}Реализация алгебраической логики}{10}{subsection.0.3.1}%
+\contentsline {subsection}{\numberline {3.2}Реализация консольного меню}{21}{subsection.0.3.2}%
 \contentsline {section}{\numberline {4}Результаты работы программы}{22}{section.0.4}%
-\contentsline {section}{Заключение}{24}{section*.15}%
-\contentsline {paragraph}{Плюсы программы.}{24}{section*.16}%
-\contentsline {paragraph}{Минусы программы.}{25}{section*.17}%
-\contentsline {paragraph}{Масштабирование.}{25}{section*.18}%
-\contentsline {section}{Список литературы}{26}{chapter*.19}%
-\contentsline {section}{Приложение 1. Файл Z8.h}{27}{section*.20}%
-\contentsline {section}{Приложение 2. Файл Z8.cpp}{29}{section*.21}%
-\contentsline {section}{Приложение 3. Файл main.cpp}{40}{section*.22}%
+\contentsline {section}{Заключение}{25}{section*.15}%
+\contentsline {paragraph}{Плюсы программы.}{25}{section*.16}%
+\contentsline {paragraph}{Минусы программы.}{26}{section*.17}%
+\contentsline {paragraph}{Масштабирование.}{26}{section*.18}%
+\contentsline {section}{Список литературы}{27}{chapter*.19}%
+\contentsline {section}{Приложение 1. Файл Z8.h}{28}{section*.20}%
+\contentsline {section}{Приложение 2. Файл Z8.cpp}{30}{section*.21}%
+\contentsline {section}{Приложение 3. Файл main.cpp}{41}{section*.22}%

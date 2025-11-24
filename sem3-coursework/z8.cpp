@@ -50,11 +50,11 @@ bool Z8Number::isEqual(const std::string& a, const std::string& b) {
 void Z8Number::validate(const std::string& s) {
     if (s.empty()) throw std::invalid_argument("Empty number");
     if (s.size() > 8 && s[0] != '-' || s.size() > 9) throw std::invalid_argument("More than 8 digits");
-        for (char c : s) {
-            if (c != 'a' && c != 'b' && c != 'c' && c != 'd' &&
-                c != 'e' && c != 'f' && c != 'g' && c != 'h' && c != '-')
-                throw std::invalid_argument("Invalid character");
-        }
+    for (char c : s) {
+        if (c != 'a' && c != 'b' && c != 'c' && c != 'd' &&
+            c != 'e' && c != 'f' && c != 'g' && c != 'h' && c != '-')
+            throw std::invalid_argument("Invalid character");
+    }
 }
 
 Z8Number::Z8Number() : digits("a"), isNegative(false) {}
