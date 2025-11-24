@@ -3,8 +3,6 @@
 #include "z8.h"
 
 int main() {
-    std::cout << "Hello!" << std::endl;
-    std::string s1, s2, op;
     /*std::cout << "=== DEBUG ===" << std::endl;
     std::cout << "a + b = " << (Z8Number("a") + Z8Number("b")).toString() << "\n";
     std::cout << "f + b = " << (Z8Number("f") + Z8Number("b")).toString() << "\n";
@@ -25,6 +23,9 @@ int main() {
     std::cout << "-a + -a ="; calculate(Z8Number("-a"), Z8Number("-a"), "+");
     std::cout << "-a * a ="; calculate(Z8Number("-a"), Z8Number("a"), "*");
     std::cout << "-a * baa ="; calculate(Z8Number("-a"), Z8Number("baa"), "*");*/
+
+    std::cout << "Hello!" << std::endl;
+    std::string s1, s2, op;
     while (true) {
         std::cout << "Enter the problem (format: <num> <operation> <num>; nums from -ffffffff to ffffffff):\n>> ";
         std::cin >> s1;
@@ -36,7 +37,7 @@ int main() {
             calculate(a, b, op);
         }
         catch (...) {
-            std::cerr << "Error: incorrect input" << std::endl;
+            std::cerr << "Error: incorrect input (invalid characters)" << std::endl;
         }
     }
 }

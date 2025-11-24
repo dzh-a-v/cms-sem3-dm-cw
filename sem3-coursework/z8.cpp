@@ -84,7 +84,7 @@ std::string Z8Number::incNumber(const std::string& num) {
         if (i == 0) { // carrying until no need to
             res = 'b' + res;
             if (res.size() > 8)
-                throw OverflowError();
+                throw std::overflow_error("Number exceeds 8 digits");
             break;
         }
         --i;

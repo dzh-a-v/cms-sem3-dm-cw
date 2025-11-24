@@ -40,7 +40,7 @@ private:
     friend void calculate(const Z8Number& a, const Z8Number& b, std::string op);
 };
 
-class OverflowError : public std::overflow_error {
-public:
-    OverflowError() : std::overflow_error("Number exceeds 8 digits") {}
-};
+//class OverflowError : public std::overflow_error {
+//public:
+//    OverflowError() : std::overflow_error("Number exceeds 8 digits") {}
+//};
