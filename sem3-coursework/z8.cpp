@@ -189,7 +189,7 @@ std::string Z8Number::mulNumbers(const std::string& x, const std::string& y) {
     return res;
 }
 
-std::string Z8Number::divNumbers(const std::string& x, const std::string& y) {
+std::string Z8Number::divNumbers(const std::string& x, const std::string& y, bool oneIsNeg) {
     if (isEqual(y, "a")) {
         throw std::domain_error("Division by zero");
     }
@@ -205,6 +205,11 @@ std::string Z8Number::divNumbers(const std::string& x, const std::string& y) {
         quotient = incNumber(quotient);
     }
 
+    if (oneIsNeg && !isEqual(remainder, "a")) {
+        quotient = incNumber(quotient);
+        remainder = subNumbers(y, remainder);
+    }
+
     if (isEqual(remainder, "a")) {
         return quotient;
     }
@@ -213,8 +218,8 @@ std::string Z8Number::divNumbers(const std::string& x, const std::string& y) {
     }
 }
 
-std::string Z8Number::divide(const Z8Number& divisor) const {
-    return divNumbers(digits, divisor.digits);
+std::string Z8Number::divide(const Z8Number& divisor, bool oneIsNeg) const {
+    return divNumbers(digits, divisor.digits, oneIsNeg);
 }
 
 Z8Number Z8Number::operator+(const Z8Number& o) const {
@@ -293,7 +298,7 @@ void calculate(const Z8Number& a, const Z8Number& b, std::string op) {
             }
             else if (op == "/") {
                 if (a == Z8Number("a")) result = a.divide(b);
-                else result = "-" + a.divide(b);
+                else result = "-" + a.divide(b, true);
             }
             else {
                 std::cerr << "Unknown operator\n";
