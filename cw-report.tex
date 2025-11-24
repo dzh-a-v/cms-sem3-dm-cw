@@ -127,7 +127,9 @@
 			\item поддерживает разность для данной арифметики,
 			\item поддерживает умножение для данной арифметики,
 			\item подддерживает деление для данной арифметики,
-			\item поддерживает мультиразрядность (возможна операция bbb + ccc).
+			\item поддерживает мультиразрядность (возможна операция bbb + ccc),
+			\item поддерживает отрицательные числа,
+			\item выполняет вычисления только в рамках данной арифметики без перевода в иные системы счисления.
 		\end{itemize}
 		
 		\newpage
@@ -159,7 +161,7 @@
 		\forall x \in Z_8,\quad x \cdot b = x.
 		\]
 		
-		Также выполняется свойство поглощения:
+		Выполняется свойство поглощения:
 		\[
 		\forall x \in Z_8,\quad x \cdot a = a.
 		\]
@@ -168,1153 +170,510 @@
 		
 		Эти свойства позволяют рассматривать структуру $\langle Z_8; +, \cdot \rangle$ как \textbf{коммутативное кольцо с единицей}.
 		
-		\subsection{Изоморфизм с кольцом вычетов $\mathbb{Z}/8\mathbb{Z}$}
+		\subsection{Арифметические операции}
+		Для выполнения арифметических операций (+, -, *, /) была составлена следующая логика.
 		
-		Введём биекцию $\varphi: Z_8 \to \{0,1,\dots,7\}$, сопоставляющую каждому элементу его порядковый номер в последовательности, порождённой многократным применением правила «+1» к элементу~$a$:
-		\[
-		\begin{aligned}
-			\varphi(a) &= 0, &
-			\varphi(b) &= 1, &
-			\varphi(d) &= 2, &
-			\varphi(h) &= 3, \\
-			\varphi(c) &= 4, &
-			\varphi(e) &= 5, &
-			\varphi(g) &= 6, &
-			\varphi(f) &= 7.
-		\end{aligned}
-		\]
-		
-		Отображение~$\varphi$ является изоморфизмом для исходной структуры.
-		
-		Данное отображение позволяет переводить результаты арифметических операций на числах в восьмеричной системе счисления в исходную структуру (a, b, c...).
-		
-		\subsection{«Большая» конечная арифметика}
-		
-		На основе «малой» арифметики строится позиционная система счисления по основанию~8, в которой:
-		\item \textbf{Цифрами} являются элементы множества~$Z_8$,
-		\item \textbf{Числа} записываются как строки длиной до 8~символов (например, $bbb$, $ccc$),
-		\item Значение числа $X = x_{n-1} x_{n-2} \dots x_0$ определяется как
-		\[
-		X = \sum_{k=0}^{n-1} \varphi(x_k) \cdot 8^k.\qquad (1)
-		\]
-		
-		Арифметические операции над многоразрядными числами реализуются следующим образом:
-		\begin{enumerate}
-			\item Преобразование операндов в целые числа по формуле (1).
-			\item Выполнение операции в кольце целых чисел.
-			\item Преобразование результата обратно в символьную форму с помощью последовательного деления на 8 и применения~$\varphi^{-1}$ к остаткам.
+		\subsubsection{Сложение}
+		Сложение выполняется по следующей логике.
+		\begin{enumerate}[]
+			\item Пусть надо сложить числа \code{A} и \code{B}.
+			\item Выбирается наибольшее из этих двух чисел (можно, т.к. данная алгебра коммутативна). Пусть наибольшее в данном случае \code{A}.
+			\item К \code{A} прибавляется элемент \code{b} (мультипликативная единица) \code{B} раз. Это, в свою очередь, производится по следующей логике.
+			\begin{enumerate}[]
+				\item Если разряд, к которому прибавлялось \code{b}, не был равен \code{f} до прибавления, измененным остается только текущий разряд.
+				\item В противном случае, \code{b} прибавляется к следующему разряду (перенос), и так до тех пор, пока не надо будет совершать перенос.
+			\end{enumerate}
 		\end{enumerate}
 		
+		Выбор наибольшего из двух чисел во втором пункте обоснован оптимизацией вычислений, т.к. если мы складываем, например, \code{b} и \code{fffffffg}, намного быстрее прибавить один раз \code{b} к \code{fffffffg}, чем наоборот.
 		
-		При вычитании из меньшего большего совершается проход по кольцу от наименьшего числа к наибольшему: например, $a - b = ffffffff$.
+		\subsubsection{Умножение}
+		Умножение выполняется по следующей логике.
+		\begin{enumerate}[]
+			\item Пусть надо умножить число \code{А} на \code{В}.
+			\item Выбирается наибольшее из этих двух чисел (коммутативность). Пусть наибольшее в данном случае \code{А}.
+			\item К \code{А} прибавляется \code{А} \code{В-1} раз, что реализовано через правило "+1".
+		\end{enumerate}
 		
-		При нецелом частном ответ записывается в формате ''<целая часть>.<остаток>''.
+		Выбор наибольшего из двух чисел во втором пункте обоснован оптимизацией вычислений, т.к. если мы умножем, например, \code{baa} и \code{baaa}, намного быстрее прибавлять к себе \code{baaa} \code{baa} раз, чем наоборот.
 		
-		Такой подход обеспечивает корректную реализацию всех четырёх арифметических операций ($+, -, \cdot, \div$) в рамках заданной конечной структуры.
+		\subsubsection{Вычитание}
+		Вдобавок к таблице правила "+1" была создана аналогичная таблица правила "-1".
 		
+		Логика вычитания реализована так же, как и сложения, за исключением того, что мы "занимаем" разряд в случае, если вычитаемый разряд на момент вычитания равен \code{a}, что вызовет переход к \code{f}, далее операция производится для старшего разряда, и так до тех пор, пока занимать разряд не придется.
 		
+		\subsubsection{Деление}
+		Деление реализовано так же, как умножение, за исключением того, что вместо сложения мы используем вычитание из числа \code{А} числа \code{В} до тех пор, пока промежуточный	 результат вычитания не будет меньше \code{А}; ответ равен текущему результату вычитания и остатку (последнему промежуточному результату).
+		
+		\subsubsection{Отрицательные числа и операции с ними}
+		Операции с отрицательными числами основываются на операциях с положительными, всё заключается в изменении самой операции (например, сложение положительного и отрицательного чисел можно рассматривать как разность), а эти изменения опираются на свойства коммутативных колец (например, $-a + b = b + -a = b - a$).
+		
+		Операции с отрицательными числами проводятся по следующей логике:
+		
+		\textbf{Если отрицательно одно число:}
+		\begin{enumerate}[]
+			\item Пусть модуль отрицательного числа \code{А}, а положительное число \code{В}.
+			\item При сложении вычитаем из модуля большего модуль меньшего; если \code{A} > \code{B}, приписываем минус в начале ответа, в противном случае нет.
+			\item При вычитании складываем модули чисел.
+			\item При умножении совершаем умножение и приписываеим минус.
+			\item При делении совершается деление и приписывается минус.
+		\end{enumerate}
+		
+		\textbf{Если оба числа отрицательны:}
+		\begin{enumerate}[]
+			\item Пусть модули двух отрицательных чисел \code{A} и \code{B} соответственно.
+			\item При сложении складываем модули и приписываем минус.
+			\item При вычитании берем модуль большего, вычитаем из него модуль меньшего; если \code{A} > \code{B}, приписываем минус, в противном случае нет.
+			\item При умножении совершаем умножение модулей.
+			\item При делении совершается деление модулей.
+		\end{enumerate}
+		
+		\subsection{Ограничения}
+		В данной алгебре присутствуют следующие ограничения:
+		\begin{itemize}
+			\item нельзя делить на ноль;
+			\item нельзя проводить операции над числами, превышающими 8 разрядов;
+			\item результат операции не должен превышать 8 разрядов.
+		\end{itemize}
+		
+		Выход за эти ограничения ведет к неопределенному выходу, т.е. результат таких операций неизвестен.
 		
 		\newpage
 		\section{Особенности реализации}
-		Программа состоит из двух классов: \code{Multiset} и \code{Interface}.
+		Программа состоит из двух классов: \code{Z8Number} и \code{OverflowError}.
 		
-		Класс \code{Multiset} содержит в себе поля для хранения данных о мультимножестве и методы для проведения операций над мультимножествами. Мультимножества хранятся в контейнере \code{std::string}, т.к. с ним удобно работать.
+		Класс \code{Z8Number} содержит в себе поля для хранения данных о числе и функции для проведения операций над ними.
 		
-		Класс \code{Interface} содержит в себе поля для хранения данных о всех мультимножествах в контейнере \code{std::map<std::string, Multiset>}, где ключи - названия мультимножеств, а значения - сами мультимножества. Методы класса отвечают за консольное меню (пользовательский ввод, вывод мультимножеств и результатов операций над ними).
+		Класс \code{OverflowError} содержит в себе код ошибку, вызываемую при переполнении (ограничение на число в рамках данной структуры составляет 8 разрядов).
+		
+		В рамках данного описания числами будут называться элементы структуры $Z_8$ (\code{a}, \code{b}, ..., \code{f}).
 		
 		
-		\subsection{Класс \protect\code{Multiset}}
+		\subsection{Класс \protect\code{Z8Number}}
 		
 		\begin{itemize}
-			\item \textbf{Метод \code{generateGrayCode}}  
-			\textbf{\\Вход:} \code{int n} - разрядность кода Грея.\\
-			\textbf{Выход:} \code{std::vector<std::string> gray} - контейнер с кодами Грея.\\
-			\textbf{Назначение:} генерирует коды Грея разрядности $n$.\\
+			\item \textbf{Метод \code{getNeg}}  
+			\textbf{\\Вход:} \code{bool isNegative} - отрицательно ли данное число.\\
+			\textbf{Выход:} \code{bool isNegative} - отрицательно ли данное число.\\
+			\textbf{Назначение:} возвращает булевое значение, означающее отрицательно ли данное число.\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-				if (n <= 0) return {};
-				std::vector<std::string> gray;
-				int total = 1 << n;
-				
-				for (int i = 0; i < total; ++i) {
-					int grayCode = i ^ (i >> 1);
-					std::string code = "";
-					for (int j = n - 1; j >= 0; --j) {
-						code += (grayCode & (1 << j)) ? '1' : '0';
-					}
-					gray.push_back(code);
-				}
-				return gray;
+bool Z8Number::getNeg() const {
+	return isNegative;
+}
 			\end{lstlisting}
 			
-			\item \textbf{Метод \code{createUniverse}}  
-			\textbf{\\Вход:} \code{int depth} - разрядность кода Грея, который будет храниться в универсуме.\\
-			\textbf{Выход:} \code{std::vector<std::string> universe} - универсум по кодам Грея с заданной разрядностью.\\
-			\textbf{Назначение:} создаёт универсум по кодам Грея.\\
+			\item \textbf{Метод \code{inc}}  
+			\textbf{\\Вход:} \code{char c} - текущее число.\\
+			\textbf{Выход:} \code{char c} - следующее число.\\
+			\textbf{Назначение:} возвращает число, получающееся в результате операции "+1" над текущим.\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-				void Multiset::createUniverse(int depth) {
-					universe = generateGrayCode(depth);
-				}
+char Z8Number::inc(char c) {
+	switch (c) {
+		case 'a': return 'b';
+		case 'b': return 'd';
+		case 'c': return 'e';
+		case 'd': return 'h';
+		case 'e': return 'g';
+		case 'f': return 'a';
+		case 'g': return 'f';
+		case 'h': return 'c';
+		default: throw std::invalid_argument("Invalid digit");
+	}
+}
 			\end{lstlisting}
 			
-			\item \textbf{Метод \code{setMaxMultiplicity}}  
-			\textbf{\\Вход:} \code{int limit} - значение максимальной кратности элементов.\\
-			\textbf{Выход:} \code{int limit} - значение максимальной кратности элементов.\\
-			\textbf{Назначение:} устанавливает максимальную кратность в универсуме (хранится в виде статической переменной).\\
+			\item \textbf{Метод \code{dec}}  
+			\textbf{\\Вход:} \code{char c} - текущее число.\\
+			\textbf{Выход:} \code{char c} - предыдущее число.\\
+			\textbf{Назначение:} возвращает число, получающееся в результате операции "-1" над текущим.\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-				void Multiset::setMaxMultiplicity(int limit) {
-					maxMultiplicity = limit;
-				}
+char Z8Number::dec(char c) {
+	switch (c) {
+		case 'a': return 'f';
+		case 'b': return 'a';
+		case 'c': return 'h';
+		case 'd': return 'b';
+		case 'e': return 'c';
+		case 'f': return 'g';
+		case 'g': return 'e';
+		case 'h': return 'd';
+		default: throw std::invalid_argument("Invalid digit");
+	}
+}
 			\end{lstlisting}
 			
-			\item \textbf{Метод \code{getMaxMultiplicity}}  
-			\textbf{\\Вход:} \code{int maxMultiplicity} - значение максимальной кратности элементов.\\
-			\textbf{Выход:} \code{int maxMultiplicity} - значение максимальной кратности элементов.\\
-			\textbf{Назначение:} возвращает текущую максимальную кратность.\\
+			\item \textbf{Метод \code{normalize}}  
+			\textbf{\\Вход:} \code{std::string s} - введенное число.\\
+			\textbf{Выход:} \code{std::string r} - модуль данного числа без незначащих 'a'.\\
+			\textbf{Назначение:} возвращает модуль данного числа без незначащих 'a'.\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-				int Multiset::getMaxMultiplicity() {
-					return maxMultiplicity;
-				}
+std::string Z8Number::normalize(const std::string& s) {
+	size_t i = s[0] == '-' ? 1 : 0;
+	while (i < s.length() - 1 && s[i] == 'a')
+	++i;
+	return s.substr(i);
+}
 			\end{lstlisting}
 			
-			\item \textbf{Метод \code{size}}  
-			\textbf{\\Вход:} \code{Multiset input} - мультимножество.\\
-			\textbf{Выход:} \code{int total} - мощность мультимножества.\\
-			\textbf{Назначение:} возвращает мощность мультимножества.\\
+			\item \textbf{Метод \code{isEqual}}  
+			\textbf{\\Вход:} \code{std::string a, std::string b} - числа для сравнения.\\
+			\textbf{Выход:} \code{bool n} - результат сравнения чисел.\\
+			\textbf{Назначение:} сравнивает два числа и возвращает true, если их модули равны, иначе false.\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-				int Multiset::size() const {
-					int total = 0;
-					for (const auto& p : elements) total += p.second;
-					return total;
-				}
+bool Z8Number::isEqual(const std::string& a, const std::string& b) {
+	return normalize(a) == normalize(b);
+}
 			\end{lstlisting}
 			
-			\item \textbf{Метод \code{fillManual}}  
-			\textbf{\\Вход:} \code{int size} - мощность создаваемого мультимножества.\\
-			\textbf{Выход:} \code{Multiset multi} - мультимножество.\\
-			\textbf{Назначение:} воздание и ручное заполнение мультимножества.\\
+			\item \textbf{Метод \code{validate}}  
+			\textbf{\\Вход:} \code{std::string s} - число на проверку корректности.\\
+			\textbf{Выход:} \code{bool n} - корректно ли данное число.\\
+			\textbf{Назначение:} проверяет, корретно ли данное число (не превышает ли лимиты и не содержит ли лишних символов).\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-				void Multiset::fillManual(int size) {
-					std::cin.ignore();
-					if (size < 0) return;
-					
-					if (size != 0)
-					std::cout << "Enter " << size << " Gray codes (limit: " << maxMultiplicity << ")\n"
-					<< "(You can enter either Gray code only or Gray code [space] count; other numbers won't be accounted)" << std::endl;
-					
-					for (int i = 0; i < size; ) {
-						std::string code;
-						while (true) {
-							std::cout << "Code #" << (i + 1) << ": ";
-							
-							std::string line;
-							std::getline(std::cin, line);
-							std::istringstream iss(line);
-							
-							std::string code;
-							if (!(iss >> code)) {
-								std::cout << "Empty input. Try again.\n";
-								continue;
-							}
-							
-							int count = 1;
-							iss >> count;
-							
-							if (!isValidCode(code)) {
-								std::cout << "Invalid code. Valid: ";
-								for (const auto& c : universe) std::cout << c << " ";
-								std::cout << "\nTry again.\n";
-								continue;
-							}
-							
-							if (!canAdd(code)) {
-								std::cout << "You've reached your limit(" << maxMultiplicity 
-								<< ") for the code \"" << code << "\". Please pick different.\n";
-								continue;
-							}
-							
-							int currentCount = frequency(code);
-							if (currentCount + count > maxMultiplicity) {
-								std::cout << "Adding " << count << " of \"" << code
-								<< "\" would exceed limit (" << maxMultiplicity
-								<< "). Currently have " << currentCount << ".\n"
-								<< "Try again with fewer or different code.\n";
-								continue;
-							}
-							
-							for (int j = 0; j < count; ++j) {
-								add(code);
-							}
-							
-							i += count;
-							break;
-						}
-					}
-				}
+void Z8Number::validate(const std::string& s) {
+	if (s.empty()) throw std::invalid_argument("Empty number");
+	if (s.size() > 8 && s[0] != '-' || s.size() > 9) throw std::invalid_argument("More than 8 digits");
+	for (char c : s) {
+		if (c != 'a' && c != 'b' && c != 'c' && c != 'd' &&
+		c != 'e' && c != 'f' && c != 'g' && c != 'h' && c != '-')
+		throw std::invalid_argument("Invalid character");
+	}
+}
 			\end{lstlisting}
 			
-			\item \textbf{Метод \code{fillRandom}}  
-			\textbf{\\Вход:} \code{int size} - мощность создаваемого мультимножества.\\
-			\textbf{Выход:} \code{Multiset multi} - мультимножество.\\
-			\textbf{Назначение:} создание и заполнение мультимножества случайными элементами.\\
+			\item \textbf{Метод \code{operator==}}  
+			\textbf{\\Вход:} \code{Z8Number current, Z8Number other} - числа на сравнение.\\
+			\textbf{Выход:} \code{bool n} - результат сравнения двух чисел.\\
+			\textbf{Назначение:} сравнивает два числа по модулю.\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-				void Multiset::fillRandom(int size) {
-					if (size <= 0 || universe.empty()) return;
-					
-					for (int i = 0; i < size; ++i) {
-						std::string code;
-						do {
-							code = universe[rand() % universe.size()];
-						} while (!canAdd(code));
-						
-						add(code);
-					}
-				}
+bool Z8Number::operator==(const Z8Number& other) const {
+	return isEqual(digits, other.digits);
+}
 			\end{lstlisting}
 			
-			\item \textbf{Метод \code{frequency}}  
-			\textbf{\\Вход:} \code{const std::string\& code} - код Грея.\\
-			\textbf{Выход:} \code{int count} - кратность элемента в мультимножестве.\\
-			\textbf{Назначение:} возвращает кратность элемента (кода Грея) в мультимножестве.\\
+			\item \textbf{Метод \code{incNumber}}  
+			\textbf{\\Вход:} \code{std::string num} - число на увеличение.\\
+			\textbf{Выход:} \code{std::string new} - число после увеличения.\\
+			\textbf{Назначение:} увеличивает число на единицу, учитывая переносы.\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-				int Multiset::frequency(const std::string& code) const {
-					auto it = elements.find(code);
-					return (it != elements.end()) ? it->second : 0;
-				}
+std::string Z8Number::incNumber(const std::string& num) {
+	std::string res = num;
+	int i = static_cast<int>(res.size()) - 1;
+	while (i >= 0) {
+		char old = res[i];
+		res[i] = inc(old);
+		if (old != 'f') { // no carry
+			break;
+		}
+		if (i == 0) { // carrying until no need to
+			res = 'b' + res;
+			if (res.size() > 8)
+			throw OverflowError();
+			break;
+		}
+		--i;
+	}
+	return normalize(res);
+}
 			\end{lstlisting}
 			
-			\item \textbf{Метод \code{canAdd}}  
-			\textbf{\\Вход:} \code{const std::string\& code} - код Грея.\\
-			\textbf{Выход:} \code{bool canAdd} - возможность добавления элемента в мультимножество.\\
-			\textbf{Назначение:} проверяет, можно ли добавить элемент (код Грея) в мультимножество.\\
+			\item \textbf{Метод \code{decNumber}}  
+			\textbf{\\Вход:} \code{std::string num} - число на уменьшение.\\
+			\textbf{Выход:} \code{std::string new} - число после уменьшения.\\
+			\textbf{Назначение:} уменьшает число на единицу, учитывая переносы.\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-				bool Multiset::canAdd(const std::string& code) const {
-					// Check if code is valid and if adding one more would exceed maxMultiplicity
-					if (!isValidCode(code)) return false;
-					int current = frequency(code);
-					return current < maxMultiplicity;
-				}
+std::string Z8Number::decNumber(const std::string& num) {
+	if (isEqual(num, "a"))
+	throw std::domain_error("Cannot decrement zero");
+	std::string res = num;
+	int i = static_cast<int>(res.size()) - 1;
+	while (i >= 0) {
+		char old = res[i];
+		res[i] = dec(old);
+		if (old != 'a') { // a -> f, so we need to take one from higher
+			break;
+		}
+		--i;
+	}
+	return normalize(res);
+}
 			\end{lstlisting}
 			
-			\item \textbf{Метод \code{isValidCode}}  
-			\textbf{\\Вход:} \code{const std::string\& code} - код Грея.\\
-			\textbf{Выход:} \code{bool isValidCode} - корректность данного кода Грея (есть ли он в универсуме).\\
-			\textbf{Назначение:} проверяет корректность данного кода Грея (принадлежит ли код универcуму).\\
+			\item \textbf{Метод \code{greaterOrEqual}}  
+			\textbf{\\Вход:} \code{std::string num1, std::string num2} - числа на сравнение.\\
+			\textbf{Выход:} \code{bool n} - результат сравнения чисел.\\
+			\textbf{Назначение:} сравнивает два числа: больше или равно ли первое, чем второе.\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-				bool Multiset::isValidCode(const std::string& code) const {
-					for (const auto& u : universe) {
-						if (code == u) return true;
-					}
-					return false;
-				}
+bool Z8Number::greaterOrEqual(const std::string& x, const std::string& y) {
+	if (isEqual(x, y)) return true;
+	if (isEqual(y, "a")) return true;
+	if (isEqual(x, "a")) return false;
+	try {
+		subNumbers(x, y);
+		return true;
+	}
+	catch (...) {
+		return false;
+	}
+}
 			\end{lstlisting}
 			
-			\item \textbf{Метод \code{add}}  
-			\textbf{\\Вход:} \code{const std::string\& code, int count = 1} - код Грея, который нужно добавить, и его кратность (по умолч. 1).\\
-			\textbf{Выход:} \code{int added} - кол-во реально добавленных элементов.\\
-			\textbf{Назначение:} добавляет элементы в массив.\\
+			\item \textbf{Метод \code{greater}}  
+			\textbf{\\Вход:} \code{std::string num1, std::string num2} - числа на сравнение.\\
+			\textbf{Выход:} \code{bool n} - результат сравнения чисел.\\
+			\textbf{Назначение:} сравнивает два числа: больше ли первое, чем второе.\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-				int Multiset::add(const std::string& code, int count = 1) {
-					if (!isValidCode(code) || count <= 0) return 0;
-					
-					int current = frequency(code);
-					int available = maxMultiplicity - current;
-					int actualToAdd = std::min(count, available);
-					
-					if (actualToAdd > 0) {
-						elements[code] += actualToAdd;
-					}
-					
-					return actualToAdd;
-				}
+bool greater(const Z8Number& x, const Z8Number& y) {
+	if (x == y) return false;
+	if (y == Z8Number("a")) return true;
+	if (x == Z8Number("a")) return false;
+	try {
+		x - y;
+		return true;
+	}
+	catch (...) {
+		return false;
+	}
+}
 			\end{lstlisting}
 			
-			\item \textbf{Метод \code{unionWith}}  
-			\textbf{\\Вход:} \code{Multiset other} - мультимножество, с которым нужно провести операцию объединения.\\
-			\textbf{Выход:} \code{Multiset result} - мультимножество, результат выполнения операции.\\
-			\textbf{Назначение:} выполнение операции объединения над двумя мультимножествами.\\
+			\item \textbf{Метод \code{addNumbers}}  
+			\textbf{\\Вход:} \code{std::string num1, std::string num2} - числа для суммирования.\\
+			\textbf{Выход:} \code{std::string result} - результат суммирования.\\
+			\textbf{Назначение:} выполненяет сложение двух чисел.\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-				Multiset Multiset::unionWith(const Multiset& other) const {
-					Multiset result;
-					
-					for (const auto& p : elements) {
-						if (p.second > 0) {
-							result.elements[p.first] = p.second;
-						}
-					}
-					for (const auto& p : other.elements) {
-						if (p.second > 0) {
-							result.elements[p.first] = std::max(result.elements[p.first], p.second);
-						}
-					}
-					return result;
-				}
+std::string Z8Number::addNumbers(const std::string& x, const std::string& y) {
+	if (isEqual(y, "a")) return x;
+	std::string res = x;
+	std::string counter = "a";
+	while (!isEqual(counter, y)) {
+		res = incNumber(res);
+		counter = incNumber(counter);
+		if (normalize(res).size() > 8)
+		throw std::overflow_error("Number exceeds 8 digits");
+	}
+	return res;
+}
 			\end{lstlisting}
 			
-			\item \textbf{Метод \code{intersectionWith}}  
-			\textbf{\\Вход:} \code{Multiset other} - мультимножество, с которым нужно провести операцию пересечения.\\
-			\textbf{Выход:} \code{Multiset result} - мультимножество, результат выполнения операции.\\
-			\textbf{Назначение:} выполнение операции пересечения над двумя мультимножествами.\\
+			\item \textbf{Метод \code{subNumbers}}  
+			\textbf{\\Вход:} \code{std::string num1, std::string num2} - числа для выполнения вычитания.\\
+			\textbf{Выход:} \code{std::string result} - разность.\\
+			\textbf{Назначение:} выполненяет вычитание одного числа из другого, возвращает их разность.\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-				Multiset Multiset::intersectionWith(const Multiset& other) const {
-					Multiset result;
-					
-					for (const auto& p : elements) {
-						if (other.elements.count(p.first)) {
-							result.elements[p.first] = std::min(p.second, other.elements.at(p.first));
-						}
-					}
-					return result;
-				}
+std::string Z8Number::subNumbers(const std::string& x, const std::string& y) {
+	if (isEqual(y, "a")) return x;
+	if (isEqual(x, y)) return "a";
+	std::string res = x;
+	std::string counter = "a";
+	while (!isEqual(counter, y)) {
+		res = decNumber(res);
+		counter = incNumber(counter);
+	}
+	return res;
+}
 			\end{lstlisting}
 			
-			\item \textbf{Метод \code{differenceWith}}  
-			\textbf{\\Вход:} \code{Multiset other} - мультимножество, с которым нужно провести операцию разности.\\
-			\textbf{Выход:} \code{Multiset result} - мультимножество, результат выполнения операции.\\
-			\textbf{Назначение:} выполнение операции разности над двумя мультимножествами.\\
+			\item \textbf{Метод \code{mulNumbers}}  
+			\textbf{\\Вход:} \code{std::string num1, std::string num2} - числа для умножения.\\
+			\textbf{Выход:} \code{std::string result} - произведение двух чисел.\\
+			\textbf{Назначение:} выполненяет умножение двух чисел.\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-				Multiset Multiset::differenceWith(const Multiset& other) const {
-					return intersectionWith(other.complement());
-				}
+std::string Z8Number::mulNumbers(const std::string& x, const std::string& y) {
+	if (isEqual(x, "a") || isEqual(y, "a")) return "a";
+	std::string res = x;
+	std::string counter = "b";
+	if (isEqual(y, "ba")) res = res + "a";
+	else if (isEqual(y, "baa")) res = res + "aa";
+	else if (isEqual(y, "baaa")) res = res + "aaa";
+	else if (isEqual(y, "baaaa")) res = res + "aaaa";
+	else if (isEqual(y, "baaaaa")) res = res + "aaaaa";
+	else if (isEqual(y, "baaaaaa")) res = res + "aaaaaaa";
+	else if (isEqual(y, "baaaaaaa")) res = res + "aaaaaaa";
+	else {
+		while (!isEqual(counter, y)) {
+			res = addNumbers(res, x);
+			counter = incNumber(counter);
+		}
+	}
+	if (normalize(res).size() > 8)
+	throw std::overflow_error("Number exceeds 8 digits");
+	return res;
+}
 			\end{lstlisting}
 			
-			\item \textbf{Метод \code{symmetricDifferenceWith}}  
-			\textbf{\\Вход:} \code{Multiset other} - мультимножество, с которым нужно провести операцию симметрической разности.\\
-			\textbf{Выход:} \code{Multiset result} - мультимножество, результат выполнения операции.\\
-			\textbf{Назначение:} выполнение операции симметрической разности над двумя мультимножествами.\\
+			\item \textbf{Метод \code{divNumbers}, \code{divide}}  
+			\textbf{\\Вход:} \code{std::string num1, std::string num2} - делимое и делитель.\\
+			\textbf{Выход:} \code{std::string result} - частное.\\
+			\textbf{Назначение:} выполненяет деление одного числа на другое.\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-				Multiset Multiset::symmetricDifferenceWith(const Multiset& other) const {
-					Multiset result;
-					auto uni = unionWith(other);
-					auto inter = intersectionWith(other);
-					result = uni.differenceWith(inter);
-					
-					return result;
-				}
+std::string Z8Number::divNumbers(const std::string& x, const std::string& y) {
+	if (isEqual(y, "a")) {
+		throw std::domain_error("Division by zero");
+	}
+	if (isEqual(x, "a")) {
+		return "a";
+	}
+	
+	std::string quotient = "a";
+	std::string remainder = x;
+	
+	while (greaterOrEqual(remainder, y)) {
+		remainder = subNumbers(remainder, y);
+		quotient = incNumber(quotient);
+	}
+	
+	if (isEqual(remainder, "a")) {
+		return quotient;
+	}
+	else {
+		return quotient + "." + remainder;
+	}
+}
 			\end{lstlisting}
 			
-			\item \textbf{Метод \code{arithmeticSum}}  
-			\textbf{\\Вход:} \code{Multiset other} - мультимножество, с которым нужно провести операцию арифметической суммы.\\
-			\textbf{Выход:} \code{Multiset result} - мультимножество, результат выполнения операции.\\
-			\textbf{Назначение:} выполнение операции арифметической суммы над двумя мультимножествами.\\
+			\item \textbf{Метод \code{operator +, -, *}}  
+			\textbf{\\Вход:} \code{Z8Number num1, Z8Number num2} - числа для проведения арифметической операции.\\
+			\textbf{Выход:} \code{Z8Number result} - результат выполнения арифм. операции.\\
+			\textbf{Назначение:} выполнение операции над двумя числами (аналоги вызовов функций).\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-				Multiset Multiset::arithmeticSum(const Multiset& other) const {
-					Multiset result;
-					
-					for (const auto& p : elements) result.elements[p.first] += p.second;
-					for (const auto& p : other.elements) result.elements[p.first] += p.second;
-					for (auto& p : result.elements)
-					if (p.second > maxMultiplicity)
-					p.second = maxMultiplicity;
-					
-					return result;
-				}
+Z8Number Z8Number::operator+(const Z8Number& o) const {
+	return Z8Number(addNumbers(digits, o.digits));
+}
+Z8Number Z8Number::operator-(const Z8Number& o) const {
+	return Z8Number(subNumbers(digits, o.digits));
+}
+Z8Number Z8Number::operator*(const Z8Number& o) const {
+	return Z8Number(mulNumbers(digits, o.digits));
+}
 			\end{lstlisting}
 			
-			\item \textbf{Метод \code{arithmeticDifferenceWith}}
-			\textbf{\\Вход:} \code{Multiset other} - мультимножество, с которым нужно провести операцию арифметической разности.\\
-			\textbf{Выход:} \code{Multiset result} - мультимножество, результат выполнения операции.\\
-			\textbf{Назначение:} выполнение операции арифметической разности над двумя мультимножествами.\\
+			\item \textbf{Метод \code{operator =}}
+			\textbf{\\Вход:} \code{Z8Number other} - число, к которому надо приравнять текущее.\\
+			\textbf{Выход:} \code{Z8Number result} - обновленное текущее число.\\
+			\textbf{Назначение:} присваивает значение другого числа текущему.\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-				Multiset Multiset::arithmeticDifferenceWith(const Multiset& other) const {
-					Multiset result;
-					
-					for (const auto& p : elements) {
-						int count = p.second;
-						if (other.elements.count(p.first)) {
-							count -= other.elements.at(p.first);
-						}
-						if (count > 0) {
-							result.elements[p.first] = count;
-						}
-					}
-					return result;
-				}
+Z8Number& Z8Number::operator=(const Z8Number& other) {
+	digits = other.digits;
+	isNegative = other.isNegative;
+	return *this;
+}
 			\end{lstlisting}
 			
-			\item \textbf{Метод \code{arithmeticProduct}}  
-			\textbf{\\Вход:} \code{Multiset other} - мультимножество, с которым нужно провести операцию арифметического произведения.\\
-			\textbf{Выход:} \code{Multiset result} - мультимножество, результат выполнения операции.\\
-			\textbf{Назначение:} выполнение операции арифметического произведения над двумя мультимножествами.\\
+			\item \textbf{Метод \code{toString}}  
+			\textbf{\\Вход:} \code{Z8Number num} - текущее число.\\
+			\textbf{Выход:} \code{std::string strNum} - текущее число в строковом формате.\\
+			\textbf{Назначение:} переводит число в строку.\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-				Multiset Multiset::arithmeticProduct(const Multiset& other) const {
-					Multiset result;
-					
-					for (const auto& p : elements) {
-						if (other.elements.count(p.first)) {
-							result.elements[p.first] = std::min(p.second * other.elements.at(p.first), maxMultiplicity);
-						}
-					}
-					
-					return result;
-				}
+std::string Z8Number::toString() const {
+	return digits;
+}
 			\end{lstlisting}
 			
-			\item \textbf{Метод \code{arithmeticDivision}}  
-			\textbf{\\Вход:} \code{Multiset other} - мультимножество, с которым нужно провести операцию арифметического деления.\\
-			\textbf{Выход:} \code{Multiset result} - мультимножество, результат выполнения операции.\\
-			\textbf{Назначение:} выполнение операции арифметического деления над двумя мультимножествами.\\
+			\item \textbf{Метод \code{calculate}}  
+			\textbf{\\Вход:} \code{Z8Number a, Z8Number b, std::string op} - числа и операция над ними.\\
+			\textbf{Выход:} \code{Z8Number result} - результат выполнения арифметической операции над числами.\\
+			\textbf{Назначение:} выполнение арифметической операции над двумя числами с учетом знаков и разрядов.\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-				Multiset Multiset::arithmeticDivision(const Multiset& other) const {
-					Multiset result;
-					
-					for (const auto& p : elements)
-					if (other.elements.count(p.first) && other.elements.at(p.first) > 0)
-					if (p.second / other.elements.at(p.first) > 0)
-					result.elements[p.first] = p.second / other.elements.at(p.first);
-					
-					return result;
+void calculate(const Z8Number& a, const Z8Number& b, std::string op) {
+	std::string result;
+	if (!(a.isNegative) && (!(b.isNegative))) {
+		try {
+			if (op == "+") {
+				result = (a + b).toString();
+			}
+			else if (op == "-") {
+				try {
+					result = (a - b).toString();
 				}
-			\end{lstlisting}
-			
-			\item \textbf{Метод \code{complement}}  
-			\textbf{\\Вход:} \code{Multiset current} - текущее мультимножество.\\
-			\textbf{Выход:} \code{Multiset result} - новое мультимножество, являющееся дополнением текущего.\\
-			\textbf{Назначение:} дополнение относительно максимальной кратности.\\
-			\textbf{Код:}
-			\begin{lstlisting}[language=C++]
-				Multiset Multiset::complement() const {
-					Multiset result;
-					
-					for (const auto& code : universe) {
-						int current = frequency(code);
-						int needed = maxMultiplicity - current;
-						if (needed > 0) {
-							result.elements[code] = needed;
-						}
-					}
-					
-					return result;
+				catch (...) {
+					result = "-" + (b - a).toString();
 				}
-			\end{lstlisting}
-			
-			\item \textbf{Метод \code{print}}  
-			\textbf{\\Вход:}  \code{Multiset multi} - текущее мультимножество.\\
-			\textbf{Выход:} \code{Multiset multi} - текущее мультимножество.\\
-			\textbf{Назначение:} печатают мультимножество или универсум.\\
-			\textbf{Код:}
-			\begin{lstlisting}[language=C++]
-				void Multiset::print() const {
-					std::cout << "{ ";
-						bool first = true;
-						for (const auto& p : elements) {
-							if (!first) std::cout << ", ";
-							std::cout << "\"" << p.first << "\"^" << p.second;
-							first = false;
-						}
-						std::cout << "}" << std::endl;
-				}
-			\end{lstlisting}
-			
-			\item \textbf{Метод \code{printU}}
-			\textbf{\\Вход:} \code{std::vector<std::string> universe} - универсум.\\
-			\textbf{Выход:} \code{std::vector<std::string> universe} - универсум.\\
-			\textbf{Назначение:} печатает универсум.\\
-			\textbf{Код:}
-			\begin{lstlisting}[language=C++]
-				void Multiset::printU() const {
-					std::cout << "{ ";
-						bool first = true;
-						for (const auto& p : universe) {
-							if (!first) std::cout << ", ";
-							std::cout << "\"" << p << "\"^" << 10;
-							first = false;
-						}
-						std::cout << "}" << std::endl;
-				}
-			\end{lstlisting}
-			
-			\item \textbf{Метод \code{getUniverse}}  
-			\textbf{\\Вход:} \code{std::vector<std::string> universe} - универсум.\\
-			\textbf{Выход:} \code{Multiset multiUni} универсум, представленный в виде типа \code{Multiset}.\\
-			\textbf{Назначение:} возвращает универсум в виде типа \code{Multiset}.\\
-			\textbf{Код:}
-			\begin{lstlisting}[language=C++]
-				Multiset Multiset::getUniverse() {
-					Multiset uni;
-					for (const auto& elem : universe) {
-						uni.elements[elem] = maxMultiplicity;
-					}
-					return uni;
-				}
+			}
+...
 			\end{lstlisting}
 		\end{itemize}
 		
-		\subsection{Класс \protect\code{Interface}}
+		\subsection{Класс \protect\code{OverflowError}}
 		
-		\begin{itemize}
-			\item \textbf{Метод \code{isValidName}}  
-			\textbf{\\Вход:} \code{const std::string\& name} - имя нового мультимножества.\\
-			\textbf{Выход:} \code{bool correct} - валидно ли имя мультимножества.\\
-			\textbf{Назначение:} проверяет, валидно ли имя мультимножества.\\
-			\textbf{Код:}
-			\begin{lstlisting}[language=C++]
-				bool Interface::isValidName(const std::string& name) {
-					bool isValid = data_.find(name) == data_.end() && name != "";
-					if (isValid)
-					return true;
-					else
-					std::cout << "Multiset with this name already exists or name is invalid.\n"
-					<< "Please, try again: ";
-					return false;
-				}
-			\end{lstlisting}
-			
-			\item \textbf{Метод \code{createMultisets}}  
-			\textbf{\\Вход:} \code{bool rand} - режим создания мультимножества (ручное или случайное).\\
-			\textbf{Выход:} \code{Multiset multi} - новое мультимножество.\\
-			\textbf{Назначение:} создаёт новое мультимножество ручным или случайным способом; если нет универсума, сначала создает его.\\
-			\textbf{Код:}
-			\begin{lstlisting}[language=C++]
-				void Interface::createMultisets(bool rand) {
-					if (data_.size() == 0) { // Here we set the universe parameters
-						std::cout << "Enter bit depth: ";
-						int depth;
-						while (!(std::cin >> depth) || depth < 0) {
-							std::cout << "Invalid input. Enter non-negative integer: ";
-							IGN
-						}
-						
-						bitDepth_ = depth;
-						
-						if (bitDepth_ == 0)
-						goto AddUniverse;
-						
-						Multiset::createUniverse(depth);
-						
-						std::cout << "Enter universum multiplicity: ";
-						int multi;
-						IGN
-						while (!(std::cin >> multi) || multi < 0) {
-							std::cout << "Invalid input. Enter non-negative integer: ";
-							IGN
-						}
-						Multiset::setMaxMultiplicity(multi);
-						uniMultiplicity_ = multi;
-						
-						AddUniverse:
-						if (uniMultiplicity_ == 0)
-						Multiset::createUniverse(0);
-						data_["U"] = Multiset::getUniverse();
-						uniSize_ = Multiset::getUniverse().size();
-					}
-					
-					if (rand) {
-						createRandom();
-					}
-					else {
-						Multiset A;
-						
-						std::cout << "Enter name of the multiset: ";
-						std::string name;
-						std::cin >> name;
-						while (!isValidName(name)) {
-							IGN
-							std::cin >> name;
-						}
-						if (bitDepth_ * uniMultiplicity_ == 0) {
-							goto AddMultiset;
-						}
-						std::cout << "\nHow to fill multiset?\n1. Manual\n2. Auto\n> ";
-						int choice;
-						IGN
-						while (!(std::cin >> choice) || (choice != 1 && choice != 2)) {
-							IGN
-							std::cout << "Enter 1 or 2: ";
-						}
-						
-						int sizeA;
-						std::cout << "Enter size of the multiset " << name << ": ";
-						IGN
-						while (!(std::cin >> sizeA) || sizeA < 0 || sizeA > uniSize_) {
-							IGN
-							std::cout << "Size can't be negative or more than universe's size: ";
-						}
-						
-						if (choice == 1) {
-							std::cout << "Fill Multiset " << name << ':' << std::endl;
-							A.fillManual(sizeA);
-						}
-						else {
-							A.fillRandom(sizeA);
-						}
-						AddMultiset:
-						data_[name] = A;
-					}
-				}
-			\end{lstlisting}
-			
-			\item \textbf{Метод \code{displayMenu}}  
-			\textbf{\\Вход:} \code{std::string} - текст, который нужно вывести в пользовательском меню.\\
-			\textbf{Выход:} \code{std::string} - текст, который нужно вывести в пользовательском меню.\\
-			\textbf{Назначение:} выводит меню программы.\\
-			\textbf{Код:}
-			\begin{lstlisting}[language=C++]
-				void Interface::displayMenu() {
-					std::cout << "Choose an option:\n"
-					<< "1. Create new multisets\n"
-					<< "2. Perform an operation on existing multisets\n"
-					<< "3. Print a multiset\n"
-					<< "4. Print all multisets' names\n"
-					<< "5. Print all multisets\n"
-					<< "6. Create a random multiset\n"
-					<< "7. Delete a multiset\n"
-					<< "8. Reset (delete all multisets and universe)\n"
-					<< "0. Exit\n> ";
-				}
-			\end{lstlisting}
-			
-			\item \textbf{Метод \code{performAll}}  
-			\textbf{\\Вход:} \code{Multiset multi1, multi2; std::string nameA, nameB} - мультимножества и их имена.\\
-			\textbf{Выход:} \code{Multiset} - результат выполнения операций над мультимножествами.\\
-			\textbf{Назначение:} выполняет все операции и выводит результаты.\\
-			\textbf{Код:}
-			\begin{lstlisting}[language=C++]
-				void Interface::performAll(Multiset& A, Multiset& B, std::string& nameA, std::string& nameB) {
-					std::cout << "\n======= MULTISETS =======\n";
-					std::cout << "U: "; A.printU(); std::cout << '\n';
-					std::cout << nameA << ": "; A.print(); std::cout << '\n';
-					std::cout << nameB << ": "; B.print(); std::cout << '\n';
-					std::cout << "\n======= OPERATIONS =======\n";
-					std::cout << nameA << " union " << nameB << ": "; A.unionWith(B).print(); std::cout << '\n';
-					std::cout << nameA << " inter " << nameB << ": "; A.intersectionWith(B).print(); std::cout << '\n';
-					std::cout << nameA << " \\ " << nameB << ": "; A.differenceWith(B).print(); std::cout << '\n';
-					std::cout << nameB << " \\ " << nameA << ": "; B.differenceWith(A).print(); std::cout << '\n';
-					std::cout << nameA << " /\\ " << nameB << ": "; A.symmetricDifferenceWith(B).print(); std::cout << '\n';
-					std::cout << nameA << " + " << nameB << ": "; A.arithmeticSum(B).print(); std::cout << '\n';
-					std::cout << nameA << " - " << nameB << ": "; A.arithmeticDifferenceWith(B).print(); std::cout << '\n';
-					std::cout << nameB << " - " << nameA << ": "; B.arithmeticDifferenceWith(A).print(); std::cout << '\n';
-					std::cout << nameA << " * " << nameB << ": "; A.arithmeticProduct(B).print(); std::cout << '\n';
-					std::cout << nameA << " / " << nameB << ": "; A.arithmeticDivision(B).print(); std::cout << '\n';
-					std::cout << nameB << " / " << nameA << ": "; B.arithmeticDivision(A).print(); std::cout << '\n';
-					std::cout << "Complement of " << nameA << ": "; auto compA = A.complement(); compA.print(); std::cout << '\n';
-					std::cout << "Complement of " << nameB << ": "; auto compB = B.complement(); compB.print(); std::cout << '\n';
-				}
-			\end{lstlisting}
-			
-			\item \textbf{Метод \code{perform}}  
-			\textbf{\\Вход:} \code{std::string nameA, nameB} - имена мультимножеств.\\
-			\textbf{Выход:} \code{Multiset} - результат выполнения операций над мультимножествами.\\
-			\textbf{Назначение:} позволяет выполнять выбранную операцию.\\
-			\textbf{Код:}
-			\begin{lstlisting}[language=C++]
-				void Interface::perform(std::string& nameA, std::string& nameB) {
-					std::cout << "Enter the name of the 1st multiset: ";
-					std::cin >> nameA;
-					while (isValidName(nameA)) {
-						std::cout << "Multiset with this name doesn't exist. Please, try again: ";
-						std::cin >> nameA;
-					}
-					std::cout << "Enter the name of the 2nd multiset: ";
-					std::cin >> nameB;
-					while (isValidName(nameB)) {
-						std::cout << "Multiset with this name doesn't exist. Please, try again: ";
-						std::cin >> nameB;
-					}
-					
-					Multiset compA;
-					Multiset compB;
-					int trash;
-					int choice;
-					
-					while (true) {
-						CL;
-						std::cout << "Choose an operation:\n"
-						<< "1. '" << nameA << "' union '" << nameB << "'\n"
-						<< "2. '" << nameB << "' inter '" << nameB << "'\n"
-						<< "3. '" << nameA << "' \\ '" << nameB << "'\n"
-						<< "4. '" << nameB << "' \\ '" << nameA << "'\n"
-						<< "5. '" << nameA << "' /\\ '" << nameB << "'\n"
-						<< "6. '" << nameA << "' + '" << nameB << "'\n"
-						<< "7. '" << nameA << "' - '" << nameB << "'\n"
-						<< "8. '" << nameA << "' * '" << nameB << "'\n"
-						<< "9. '" << nameA << "' / '" << nameB << "'\n"
-						<< "0. '" << nameB << "' / '" << nameA << "'\n"
-						<< "d. Do all operations\n"
-						<< "a. Complement of '" << nameA << "'\n"
-						<< "b. Complement of '" << nameB << "'\n"
-						<< "q. Go to main menu\n>";
-						
-						choice = _getch();
-						
-						switch (choice) {
-							case '1':
-							std::cout << "A union B: "; data_[nameA].unionWith(data_[nameB]).print(); std::cout << '\n';
-							W;
-							break;
-							case '2':
-							std::cout << "A inter B: "; data_[nameA].intersectionWith(data_[nameB]).print(); std::cout << '\n';
-							W;
-							break;
-							case '3':
-							std::cout << "A \\ B: "; data_[nameA].arithmeticDifferenceWith(data_[nameB]).print(); std::cout << '\n';
-							W;
-							break;
-							case '4':
-							std::cout << "B \\ A: "; data_[nameB].arithmeticDifferenceWith(data_[nameA]).print(); std::cout << '\n'; 
-							W;
-							break;
-							case '5':
-							std::cout << "A sym \\ B: "; data_[nameA].symmetricDifferenceWith(data_[nameB]).print(); std::cout << '\n';
-							W;
-							break;
-							case '6':
-							std::cout << "A + B: "; data_[nameA].arithmeticSum(data_[nameB]).print(); std::cout << '\n';
-							W;
-							break;
-							case '7':
-							std::cout << "A - B: "; data_[nameA].differenceWith(data_[nameB]).print(); std::cout << '\n';
-							W;
-							break;
-							case '8':
-							std::cout << "A * B: "; data_[nameA].arithmeticProduct(data_[nameB]).print(); std::cout << '\n';
-							W;
-							break;
-							case '9':
-							std::cout << "A / B: "; data_[nameA].arithmeticDivision(data_[nameB]).print(); std::cout << '\n';
-							W;
-							break;
-							case '0':
-							std::cout << "B / A: "; data_[nameB].arithmeticDivision(data_[nameA]).print(); std::cout << '\n';
-							W;
-							break;
-							case 'd':
-							performAll(data_[nameA], data_[nameB], nameA, nameB);
-							W;
-							break;
-							case 'a':
-							std::cout << "Complement of A: "; compA = data_[nameA].complement(); compA.print(); std::cout << '\n';
-							W;
-							break;
-							case 'b':
-							std::cout << "Complement of B: "; compB = data_[nameB].complement(); compB.print(); std::cout << '\n';
-							W;
-							break;
-							case 'q':
-							goto Break;
-							default:
-							std::cout << "Invalid option. Please, try again!\n";
-							W;
-						}
-						continue;
-						Break:
-						break;
-					}
-				}
-			\end{lstlisting}
-			
-			\item \textbf{Метод \code{printMultiset}}  
-			\textbf{\\Вход:} \code{std::string name} - имя мультимножества.\\
-			\textbf{Выход:} \code{Multiset multi} - мультимножество.\\
-			\textbf{Назначение:} выводит содержимое множества.\\
-			\textbf{Код:}
-			\begin{lstlisting}[language=C++]
-				void Interface::printMultiset(std::string& name) {
-					data_[name].print();
-				}
-			\end{lstlisting}
-			
-			\item \textbf{Метод \code{printNames}}  
-			\textbf{\\Вход:} \code{std::string} - имена мультимножеств.\\
-			\textbf{Выход:} \code{std::string} - имена мультимножеств.\\
-			\textbf{Назначение:} выводит список имён всех множеств.\\
-			\textbf{Код:}
-			\begin{lstlisting}[language=C++]
-				void Interface::printNames() {
-					int i = 1;
-					for (const auto& pair : data_) {
-						std::cout << "#" << i << ": " << pair.first << std::endl;
-						i++;
-					}
-				}
-			\end{lstlisting}
-			
-			\item \textbf{Метод \code{printAllMultisets}}  
-			\textbf{\\Вход:} \code{Multiset} - все созданные мультимножества.\\
-			\textbf{Выход:} \code{Multiset} - все созданные мультимножества.\\
-			\textbf{Назначение:} печатает все мультимножества.\\
-			\textbf{Код:}
-			\begin{lstlisting}[language=C++]
-				void Interface::printAllMultisets() {
-					int i = 1;
-					for (const auto& pair : data_) {
-						std::cout << '#' << i << " \"" << pair.first << "\": ";
-						pair.second.print();
-						i++;
-					}
-				}
-			\end{lstlisting}
-			
-			\item \textbf{Метод \code{createRandom}}  
-			\textbf{\\Вход:} \code{Multiset universe} - универсум, на основе которого будет создаваться мультимножество.\\
-			\textbf{Выход:} \code{Multiset multi} - мультимножество.\\
-			\textbf{Назначение:} создаёт случайное мультимножество.\\
-			\textbf{Код:}
-			\begin{lstlisting}[language=C++]
-				void Interface::createRandom() {
-					std::string name;
-					int i = 10000;
-					do { name = std::to_string(rand() % i++); } while (!isValidName(name));
-					Multiset A;
-					i = 100;
-					int size = rand() % i;
-					while (size > uniMultiplicity_ * bitDepth_)
-					size--;
-					A.fillRandom(size);
-					data_[name] = A;
-					std::cout << "Random multiset created.\n"
-					<< "Name: " << name
-					<< "\nSize: " << A.size() << std::endl;
-				}
-			\end{lstlisting}
-			
-			\item \textbf{Метод \code{deleteMultiset()}}  
-			\textbf{\\Вход:} \code{std::string name} - имя удаляемого мультимножества.\\
-			\textbf{Выход:} \code{std::map<std::string, Multiset> data} - контейнер мультимножеств (обновленный: удалено выбранное мультимножество).\\
-			\textbf{Назначение:} удаляет мультимножество.\\
-			\textbf{Листинг:}
-			\begin{lstlisting}[language=C++]
-				void Interface::deleteMultiset() {
-					std::string name;
-					std::cout << "Enter the name of the multiset to delete: ";
-					std::cin >> name;
-					while (isValidName(name) || name == "U") { // Checks if it DOESN'T exist yet.
-						if (isValidName(name))
-						std::cout << "Multiset with this name doesn't exist. Please, try again: ";
-						else
-						std::cout << "Can't delete universe. Please, try again: ";
-						std::cin >> name;
-					}
-					data_.erase(name);
-					std::cout << "Deleted." << std::endl;
-				}
-			\end{lstlisting}
-			
-			\item \textbf{Метод \code{reset}}  
-			\textbf{\\Вход:} \code{std::map<std::string, Multiset> data} - контейнер  мультимножеств.\\
-			\textbf{Выход:} \code{std::map<std::string, Multiset> data} - пустой контейнер мультимножеств.\\
-			\textbf{Назначение:} удаляет все мультимножества.\\
-			\textbf{Листинг:}
-			\begin{lstlisting}[language=C++]
-				void Interface::reset() {
-					data_.clear();
-					bitDepth_ = 0;
-					uniMultiplicity_ = 0;
-				}
-			\end{lstlisting}
-			
-			\item \textbf{Метод \code{run}}  
-			\textbf{\\Вход:} \code{std::iostream} - поля ввода и вывода программы.\\
-			\textbf{Выход:} \code{int} - статус завершения работы программы.\\
-			\textbf{Назначение:} запускает основной цикл программы.\\
-			\textbf{Листинг:}
-			\begin{lstlisting}[language=C++]
-				int Interface::run() {
-					int trash;
-					std::string nameA;
-					std::string nameB;
-					
-					std::cout << "Hello!\n"
-					<< "Here you can create multisets and perform operations upon them.\n"
-					<< "Press any key to continue.";
-					trash = _getch();
-					
-					while (true) {
-						CL;
-						displayMenu();
-						Again:
-						char option = _getch();
-						switch (option) {
-							case '1':
-							CL;
-							createMultisets();
-							std::cout << "Press any key to continue.";
-							trash = _getch();
-							break;
-							
-							case '2':
-							CL;
-							if (data_.size() < 2) {
-								std::cout << "You need at least two multisets to perform operations.\n"
-								<< "Press any key to continue.";
-								trash = _getch();
-								break;
-							}
-							perform(nameA, nameB);
-							break;
-							
-							case '3':
-							CL;
-							if (data_.size() == 0) {
-								std::cout << "Nothing to print. No multisets available." << std::endl;
-								W;
-								break;
-							}
-							std::cout << "Enter the name of a multiset to print: ";
-							std::cin >> nameA;
-							while (isValidName(nameA)) { // Checks if it DOESN'T exist yet.
-								std::cout << "Wrong name. Please try again: ";
-								std::cin >> nameA;
-							}
-							printMultiset(nameA);
-							W;
-							break;
-							
-							case '4':
-							CL;
-							if (data_.size() == 0) {
-								std::cout << "Nothing to print. No multisets available." << std::endl;
-								W;
-								break;
-							}
-							printNames();
-							W;
-							break;
-							
-							case '5':
-							CL;
-							if (data_.size() == 0) {
-								std::cout << "Nothing to print. No multisets available." << std::endl;
-								W;
-								break;
-							}
-							printAllMultisets();
-							W;
-							break;
-							
-							case '6':
-							CL;
-							if (data_.size() == 0)
-							createMultisets(true);
-							else
-							createRandom();
-							W;
-							break;
-							
-							case '7':
-							CL;
-							if (data_.size() == 0) {
-								std::cout << "Nothing to delete. No multisets available." << std::endl;
-								W;
-								break;
-							}
-							deleteMultiset();
-							W;
-							break;
-							
-							case '8':
-							CL;
-							reset();
-							std::cout << "Resetted." << std::endl;
-							W;
-							break;
-							
-							case '0':
-							return 0;
-							
-							default:
-							std::cout << "Invalid option. Please, try again!\n";
-							goto Again;
-						}
-					}
-				}
-			\end{lstlisting}
-		\end{itemize}
+		Данный класс содержит только метод OverflowError, вызывающий ошибку std::overflow\_error с текстом "Number exceeds 8 digits".
 		
-		%\subsection{Файл \protect\code{main.cpp}}
+		\textbf{Код:}
+		\begin{lstlisting}[language=C++]
+class OverflowError : public std::overflow_error {
+	public:
+	OverflowError() : std::overflow_error("Number exceeds 8 digits") {}
+};
+		\end{lstlisting}
 		
-		%\begin{itemize}
-		%	\item \textbf{Функция \code{main}}  
-		%	\textbf{\\Вход:} отсутствует.\\
-		%	\textbf{Выход:} \code{int}.\\
-		%	\textbf{Назначение:} Точка входа в программу. Создаёт меню и запускает работу.\\
-		%	\textbf{Листинг:}
-		%	\begin{lstlisting}[language=C++]
-			%		int main() {
-				%			Interface menu;
-				%			menu.run();
-				%			return 0;
-				%		}
-			%	\end{lstlisting}
-		\%end{itemize}
 		
 		
 		\section{Результаты работы программы}
 		
-		Разработанная программа имеет консольный интерфейс и предоставляет пользователю меню, позволяющее поэтапно выполнять все действия. 
+		Разработанная программа имеет консольный интерфейс и предоставляет пользователю меню, позволяющее выполнять все действия. 
 		
 		\subsection*{Меню программы}
 		
-		После запуска программы отображается главное меню, через которое пользователь может:
-		\begin{itemize}
-			\item создать новое мультимножество (ручное или случайное заполнение);
-			\item вывести список всех созданных мультимножеств;
-			\item выбрать два мультимножества для выполнения операций;
-			\item выполнить все операции сразу или выбрать отдельную операцию;
-			\item выйти из программы.
-		\end{itemize}
-		
-		\subsection*{Создание мультимножеств}
-		
-		Программа поддерживает два режима создания мультимножеств:
-		\begin{itemize}
-			\item \textbf{ручной режим}: пользователь вводит коды Грея и их кратности, программа проверяет корректность кода и не позволяет превысить максимальную кратность;
-			\item \textbf{автоматический режим}: программа случайным образом заполняет мультимножество элементами универсума, не превышая заданные ограничения; пользователю необходимо ввести имя и мощность.
-			
-			Также для быстрого создания мультимножеств можно использовать создание случайного мультимножества: в таком случае у него будут случайные имя и содержимое, что особенно удобно для быстрой генерации.
-		\end{itemize}
-		
-		\subsection*{Работа с несколькими мультимножествами}
-		
-		Программа может одновременно хранить много мультимножеств, каждому из которых присваивается уникальное имя.
-		В любой момент пользователь может вывести названия и содержимое всех мультимножеств.
-		Это особенно удобно, если пользователь забыл их названия: с помощью этого списка он сможет найти нужные ему мультимножества и провести над ними необходимые операции.
-		
-		\subsection*{Обработка некорректного ввода}
-		
-		Программа устойчиво ведёт себя при некорректных данных:
-		\begin{itemize}
-			\item При вводе неверных команд в меню отображается предупреждение и предлагается повторить ввод;
-			\item при попытке ввести код, отсутствующий в универcуме, выводится сообщение об ошибке, а также список возможных кодов (сам универсум);
-			\item при попытке превысить максимальную кратность программа блокирует добавление;
-			\item при попытке обращения к несуществующему мультимножеству отображается предупреждение и предлагается повторить ввод;
-			\item при попытке создать мультимножество с уже существующим именем программа предлагает повторить ввод и т.д.
-		\end{itemize}
-		
-		\subsection*{Работа с пустыми множествами}
-		
-		Программа корректно обрабатывает пустые мультимножества:  
-		все операции (объединение, пересечение, разность и др.) с пустыми мультимножествами дают ожидаемый математический результат, что демонстрирует устойчивость реализации.
+		После запуска программы пользователю предлагается ввести пример, который надо решить, в формате <число> <операция> <число>. В случае некорретного ввода (неверный формат, превышение лимитов, некорректные значения чисел) или ошибки в результате вычислений (деление на ноль, превышение лимитов) программа сообщит об этом пользователю.
 		
 		\subsection*{Пример работы}
 		
-		При запуске программы высвечивается приветственное окно. Чтобы продолжить в главное меню и начать пользоваться основным функционалом программы, надо нажать на любую кнопку (рис. \ref{hello}).	
+		При запуске программы высвечивается приветственное окно и предложение ввести пример. (рис. \ref{hello}).	
 		
 		\begin{figure}[H]
 			\centering
-			%\includegraphics[width=0.9\textwidth]{hello.png}
+			\includegraphics[width=0.9\textwidth]{hello.png}
 			\caption[Приветственное сообщение]{Приветственное сообщение при запуске программы.}
 			\label{hello}
 		\end{figure}
 		
-		После этого пользователь попадает в главное меню, где ему предлагается ряд опций на выбор. Чтобы выбрать нужную опцию, пользователю нужно ввести соответствующую цифру (рис. \ref{fig:menu}).
+		Когда пользователь введет пример и нажмет Enter, программа выведет результат вычислений (рис. \ref{fig:result}).
 		
 		\begin{figure}[H]
 			\centering
-		%	\includegraphics[width=0.9\linewidth]{menu}
-			\caption[Меню]{Меню программы.}
-			\label{fig:menu}
+			\includegraphics[width=0.9\linewidth]{result}
+			\caption[Меню]{Вывод решения примера.}
+			\label{fig:result}
 		\end{figure}
 		
-		Если пользователь введет некорректный вариант, программа об этом сообщит и предложит выбрать снова (рис. \ref{fig:menuerr}).
+		Если пользователь сделает некорректный ввод, программа об этом сообщит и предложит ввести пример снова (рис. \ref{fig:takogo-net}).
 		
 		\begin{figure}[H]
 			\centering
-		%	\includegraphics[width=0.9\linewidth]{menuErr}
+			\includegraphics[width=0.9\linewidth]{takogo-net}
 			\caption{Обработка некорретного пользовательского ввода.}
-			\label{fig:menuerr}
+			\label{fig:takogo-net}
 		\end{figure}
 		
-		Если пользователь решит выполнить какие-то операции над мультимножествами, пока они не заданы, программа сообщит об этом и попросит сначала создать мультимножества (рис. \ref{fig:perferr}).
+		Если результат операции превышает лимиты, программа так же сообщит об этом (рис. \ref{fig:of}).
 		
 		\begin{figure}[H]
 			\centering
-		%	\includegraphics[width=0.9\linewidth]{perfErr}
+			\includegraphics[width=0.9\linewidth]{of}
 			\caption{Обработка попытки проведения операций над несуществующими мультимножествами.}
-			\label{fig:perferr}
+			\label{fig:of}
 		\end{figure}
 		
-		Процесс создания мультимножеств включает в себя несколько этапов (рис. \ref{fig:createauto}).
-		\begin{enumerate}
-			\item Ввод разрядности, если универсум еще не создан (например, 3).
-			\item Ввод кратности элементов универсума, если он еще не создан (например, 5).
-			\item Название мультимножества (например, A).
-			\item Выбор заполнения мультимножества: ручной или автоматический.
-			\item Ввод мощности мультимножества (например, 10).
-		\end{enumerate}
-		
-		\begin{figure}[H]
-			\centering
-		%	\includegraphics[width=0.9\linewidth]{createAuto}
-			\caption{Создание мультимножества с автоматическим заполнением.}
-			\label{fig:createauto}
-		\end{figure}
-		
-		При ручном наборе элементов мультимножества пользователь может вводить как указать кратность текущего элемента, так и опустить ее (в таком случае будет использовано значение кратности по умолчанию - 1). 
-		Если такой элемент уже существует, кратности будут сложены. 
-		Если в процессе создания мультимножества будут введены неверные данные (например, слишком большая кратность), программа сообщит об этом и попросит ввести корретные данные (рис. \ref{fig:createmanual}).
-		
-		\begin{figure}[H]
-			\centering
-		%	\includegraphics[width=0.9\linewidth]{createManual}
-			\caption{Создание мультимножества с ручным вводом элементов.}
-			\label{fig:createmanual}
-		\end{figure}
-		
-		После того как пользователь создаст хотя бы одно мультимножество, он сможет использовать весь функционал программы, в том числе операции над ними, поскольку вместе с первым мультимножеством создается и универсум, который можно увидеть, например, при выборе опции 5 "Print all multisets" (рис. \ref{fig:printall}).
-		
-		\begin{figure}[H]
-			\centering
-		%	\includegraphics[width=0.9\linewidth]{printAll}
-			\caption{Вывод всех мультимножеств.}
-			\label{fig:printall}
-		\end{figure}
-		
-		Для проведения операций над мультимножествами пользователю надо выбрать пункт 2 в меню (рис. \ref{fig:option2}).
-		
-		\begin{figure}[H]
-			\centering
-		%	\includegraphics[width=0.9\linewidth]{option2}
-			\caption{Опция для проведения операций над мультимножествами.}
-			\label{fig:option2}
-		\end{figure}
-		
-		Далее ему будет предложено ввести названия мультимножеств, с которыми будут проводиться операции. При неверном названии будет предупреждение от программы и просьба ввести корректное название (рис. \ref{fig:enternames}).
-		
-		\begin{figure}[H]
-			\centering
-		%	\includegraphics[width=0.9\linewidth]{enterNames}
-			\caption{Ввод названий мультимножеств для проведения операций.}
-			\label{fig:enternames}
-		\end{figure}
-		
-		После ввода названий мультимножеств пользователю предоставляется список возможных операций над ними. Чтобы выбрать операцию, пользователю нужно нажать на соответствующую клавишу. При неверном выборе программа попросит пользователя выбрать корректный вариант (рис. \ref{fig:operwrong}).
-		
-		\begin{figure}[H]
-			\centering
-		%	\includegraphics[width=0.9\linewidth]{operWrong}
-			\caption{Неверный выбор операции над мультимножествами.}
-			\label{fig:operwrong}
-		\end{figure}
-		
-		Для удобства пользователю предоставляется вариант "Do all operations" ("Сделать все операции"). При выборе этого варианта пользователь получит результаты всех предложенных операций над этими мультимножествами (рис. \ref{fig:doall}).
-		
-		\begin{figure}[H]
-			\centering
-		%	\includegraphics[width=0.9\linewidth]{doAll}
-			\caption{Выполнение всех операций над мультимножествами.}
-			\label{fig:doall}
-		\end{figure}
-		
-		Результаты подтвердили, что все операции над мультимножествами реализованы корректно.
+		Результаты подтвердили, что программа реализована корректно.
 		
 		\newpage
 		\section*{Заключение}
@@ -1322,54 +681,40 @@
 		
 		В ходе лабораторной работы была разработана программа, позволяющая:
 		\begin{itemize}
-			\item генерировать бинарный код Грея заданной разрядности;
-			\item формировать мультимножества двумя способами (ручной и автоматический);
-			\item выполнять над мультимножествами различные операции:
+			\item работать с арифметикой $Z_8$ с элементами (в порядке таблицы "+1") a, b, d, h, c, e, g, f:
 			\begin{itemize}
-				\item объединение,
-				\item пересечение,
+				\item сложение,
 				\item разность,
-				\item симметрическая разность,
-				\item дополнение,
-				\item арифметическая сумма,
-				\item арифметическая разность,
-				\item арифметическое произведение,
-				\item арифметическое деление;
+				\item умножение,
+				\item деление,
 			\end{itemize}
-			\item обеспечивать защиту от некорректного пользовательского ввода.
+			\item работать с мультиразрядностью,
+			\item работать с отрицательными числами,
+			\item обрабатывать некорректный ввод пользователя и ограничения в операциях,	\item выполнять вычисления только в рамках данной арифметики без перевода в иные системы счисления.
 		\end{itemize}
 		
 		Программа демонстрирует корректную реализацию всех заданных функций. 
-		Программа создана по принципам ООП: выделены отдельные классы \code{Multiset} и \code{Interface}, что удобно разделяет интерфейс и функционал каждого из класса и позволяет вносить изменения в программу легче, чем если бы она имела процедурную структуру.
+		Программа создана по принципам ООП что удобно разделяет интерфейс и функционал класса, работающего с числами, и позволяет вносить изменения в программу легче, чем если бы она имела процедурную структуру.
 		
 		\paragraph{Плюсы программы.}
 		\begin{itemize}
 			\item Использование объектно-ориентированной парадигмы программирования, что позволяет удобно модифицировать программу.
 			%\item Наличие всех основных операций над мультимножествами.
 			%\item Возможность ручного и автоматического заполнения.
-			\item Возможность работы над несколькими мультимножествами без стирания предыдущих из памяти.
-			\item Возможность удаления мультимножеств.
 		\end{itemize}
 		
 		\paragraph{Минусы программы.}
 		\begin{itemize}
 			%\item Отсутствие графического интерфейса.
-			\item Все данные хранятся в оперативной памяти, без сохранения на диск.
-			\item Ограничения по размеру входных данных (из-за возможного целочисленного переполнения при больших объемах).
-			\item Использованиe контейнеров STL, что ухудшает производительность и повышает расходы памяти.
+			\item Результаты операций не сохраняются, что позволило бы проводить несколько операций подряд.
+			\item Использование стандартных контейнеров библиотеки: вручную можно было бы создать более оптимизированные контейнеры.
+			\item Неоптимизированный подход к выполнению арифметических операций: всё строится на правиле +1, что означает, что при масштабировании программы и включении возможности проводить операции с большим числом разрядов, операции будут проводиться медленнее, чем при использовании большего числа матриц переходов для оптимальных вычислений.
 		\end{itemize}
 		
 		\paragraph{Масштабирование.}  
-		Используемая архитектура позволяет легко добавлять новые операции над мультимножествами (например, вычисление мощности или сортировку по частоте).  
-		Также возможна интеграция с графическим интерфейсом или веб-интерфейсом.  
-		В будущем можно добавить возможность работы с тернарными операциями.
-		
-		В перспективе программа может быть:
-		\begin{itemize}
-			\item использована как часть библиотеки по дискретной математике;
-			\item интегрирована в учебные курсы для демонстрации операций над мультимножествами;
-			\item адаптирована под параллельные вычисления для одновременных операций над большими мультимножествами или для ускорения самих операций.
-		\end{itemize}
+		Используемая архитектура позволяет добавлять новые операции над числами данной алгебры (например, степени, НОК, НОД).  
+		Возможна интеграция с графическим интерфейсом или веб-интерфейсом.  
+		В будущем можно добавить возможность работы с несколькими операциями в одной строке.
 		
 		Таким образом, реализованная программа является масштабируемой и обладает потенциалом развития. Её структура позволяет расширять функциональность и использовать в более крупных программных системах.
 		
@@ -1377,44 +722,27 @@
 		
 		\begin{thebibliography}{99}
 			\addcontentsline{toc}{section}{Список литературы}
-			\bibitem{oop} Павловская Т. А., Щюпак Ю. А. С++ Объектно-ориентированное программирование: Практикум. — СПб.: Питер, 2006. — 265 с.
-			\bibitem{gray} Коды Грэя и задачи перебора (Электронный ресурс).\\
-			URL: \url{https://habr.com/ru/articles/200806/}\\
-			(дата обращения: 13.09.2025).
+			\bibitem{oop} Павловская Т. А., Щюпак Ю. А. С++ Объектно-ориентированное программирование: Практикум. — СПб.: Питер, 2006 — 265 с.
+			\bibitem{gray} 3. Хаггарти Р. Дискретная математика для программистов — Москва: ТЕХНОСФЕРА, 2012 - 400 с.
 			\bibitem{dismath} Секция "Телематика" (Электронный ресурс).\\
 			URL: \url{https://tema.spbstu.ru/dismath/}\\
-			(дата обращения: 13.09.2025).
-			\bibitem{map} Класс map | Microsoft Learn (Электронный ресурс).\\
-			URL: \url{https://learn.microsoft.com/ru-ru/cpp/standard-library/map-class?view=msvc-170}\\
-			(дата обращения: 18.09.2025).
+			(дата обращения: 24.11.2025).
 		\end{thebibliography}
 		
 		\newpage
-		%\section*{Приложение}
-		%\addcontentsline{toc}{section}{Приложение}
 		
-		\section*{Приложение 1. Файл Multiset.h.}
-		\addcontentsline{toc}{section}{Приложение 1. Файл Multiset.h}
-		%\lstinputlisting[language=C++,caption={Файл Multiset.h}]{Multiset.h}
+		\section*{Приложение 1. Файл Z8.h.}
+		\addcontentsline{toc}{section}{Приложение 1. Файл Z8.h}
+		\lstinputlisting[language=C++,caption={Файл Z8.h}]{Z8.h}
 		\newpage
 		
-		\section*{Приложение 2. Файл Multiset.cpp.}
-		\addcontentsline{toc}{section}{Приложение 2. Файл Multiset.cpp}
-		%\lstinputlisting[language=C++,caption={Файл Multiset.cpp}]{Multiset.cpp}
+		\section*{Приложение 2. Файл Z8.cpp.}
+		\addcontentsline{toc}{section}{Приложение 2. Файл Z8.cpp}
+		\lstinputlisting[language=C++,caption={Файл Z8.cpp}]{Z8.cpp}
 		\newpage
 		
-		\section*{Приложение 3. Файл Interface.h.}
-		\addcontentsline{toc}{section}{Приложение 3. Файл Interface.h}
-		%\lstinputlisting[language=C++,caption={Файл Interface.h}]{Interface.h}
-		\newpage
+		\section*{Приложение 3. Файл main.cpp.}
+		\addcontentsline{toc}{section}{Приложение 3. Файл main.cpp}
+		\lstinputlisting[language=C++,caption={Файл main.cpp}]{main.cpp}
 		
-		\section*{Приложение 4. Файл Interface.cpp.}
-		\addcontentsline{toc}{section}{Приложение 4. Файл Interface.cpp}
-		%\lstinputlisting[language=C++,caption={Файл Interface.cpp}]{Interface.cpp}
-		\newpage
-		
-		\section*{Приложение 5. Файл main.cpp.}
-		%\addcontentsline{toc}{section}{Приложение 5. Файл main.cpp}
-	%	\lstinputlisting[language=C++,caption={Файл main.cpp}]{main.cpp}
-		
-	\end{document}
+\end{document}

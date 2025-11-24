@@ -89,8 +89,6 @@ std::string Z8Number::incNumber(const std::string& num) {
         }
         --i;
     }
-    if (normalize(res).size() > 8)
-        throw std::overflow_error("Number exceeds 8 digits");
     return normalize(res);
 }
 
@@ -149,8 +147,6 @@ std::string Z8Number::addNumbers(const std::string& x, const std::string& y) {
     while (!isEqual(counter, y)) {
         res = incNumber(res);
         counter = incNumber(counter);
-        if (normalize(res).size() > 8)
-            throw std::overflow_error("Number exceeds 8 digits");
     }
     return res;
 }
@@ -171,21 +167,10 @@ std::string Z8Number::mulNumbers(const std::string& x, const std::string& y) {
     if (isEqual(x, "a") || isEqual(y, "a")) return "a";
     std::string res = x;
     std::string counter = "b";
-    if (isEqual(y, "ba")) res = res + "a";
-    else if (isEqual(y, "baa")) res = res + "aa";
-    else if (isEqual(y, "baaa")) res = res + "aaa";
-    else if (isEqual(y, "baaaa")) res = res + "aaaa";
-    else if (isEqual(y, "baaaaa")) res = res + "aaaaa";
-    else if (isEqual(y, "baaaaaa")) res = res + "aaaaaaa";
-    else if (isEqual(y, "baaaaaaa")) res = res + "aaaaaaa";
-    else {
-        while (!isEqual(counter, y)) {
-            res = addNumbers(res, x);
-            counter = incNumber(counter);
-        }
+    while (!isEqual(counter, y)) {
+        res = addNumbers(res, x);
+        counter = incNumber(counter);
     }
-    if (normalize(res).size() > 8)
-        throw std::overflow_error("Number exceeds 8 digits");
     return res;
 }
 
@@ -209,7 +194,7 @@ std::string Z8Number::divNumbers(const std::string& x, const std::string& y) {
         return quotient;
     }
     else {
-        return quotient + "(" + remainder + ")";
+        return quotient + "." + remainder;
     }
 }
 
