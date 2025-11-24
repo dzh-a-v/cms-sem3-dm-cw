@@ -39,8 +39,3 @@ private:
     static bool isEqual(const std::string& a, const std::string& b);
     friend void calculate(const Z8Number& a, const Z8Number& b, std::string op);
 };
-
-//class OverflowError : public std::overflow_error {
-//public:
-//    OverflowError() : std::overflow_error("Number exceeds 8 digits") {}
-//};

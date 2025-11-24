@@ -191,7 +191,10 @@ std::string Z8Number::mulNumbers(const std::string& x, const std::string& y) {
 
 std::string Z8Number::divNumbers(const std::string& x, const std::string& y, bool firstIsNeg) {
     if (isEqual(y, "a")) {
-        throw std::domain_error("Division by zero");
+        if (isEqual(x, "a"))
+            return "[-ffffffff; ffffffff]";
+        else
+            return "empty set";
     }
     if (isEqual(x, "a")) {
         return "a";
@@ -263,10 +266,8 @@ void calculate(const Z8Number& a, const Z8Number& b, std::string op) {
                 if (greater(a, b)) result = (a * b).toString();
                 else result = (b * a).toString();
             }
-            else if (op == "/") {
-                if (Z8Number::isEqual(a.toString(), "a") && Z8Number::isEqual(b.toString(), "a")) result = "[-ffffffff; ffffffff]";
-                else if (Z8Number::isEqual(b.toString(), "a")) result = "empty set";
-                else result = a.divide(b);
+            else if (op == "/") { 
+                result = a.divide(b);
             }
             else {
                 std::cerr << "Unknown operator\n";
@@ -343,5 +344,6 @@ void calculate(const Z8Number& a, const Z8Number& b, std::string op) {
             std::cerr << "Error: " << e.what() << "\n";
         }
     }
+    if (result == "-empty set") result = "empty set";
     std::cout << result << std::endl;
 }

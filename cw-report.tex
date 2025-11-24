@@ -546,7 +546,10 @@ std::string Z8Number::mulNumbers(const std::string& x, const std::string& y) {
 			\begin{lstlisting}[language=C++]
 std::string Z8Number::divNumbers(const std::string& x, const std::string& y, bool firstIsNeg) {
 	if (isEqual(y, "a")) {
-		throw std::domain_error("Division by zero");
+		if (isEqual(x, "a"))
+		return "[-ffffffff; ffffffff]";
+		else
+		return "empty set";
 	}
 	if (isEqual(x, "a")) {
 		return "a";
