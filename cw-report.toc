@@ -2,14 +2,14 @@
 \contentsline {section}{Введение}{3}{section*.2}%
 \contentsline {section}{\numberline {1}Постановка задачи}{4}{section.0.1}%
 \contentsline {section}{\numberline {2}Математическое описание}{5}{section.0.2}%
-\contentsline {subsection}{\numberline {2.1}Исходная структура — «малая» конечная арифметика}{5}{subsection.0.2.1}%
-\contentsline {subsection}{\numberline {2.2}Арифметические операции}{6}{subsection.0.2.2}%
+\contentsline {subsection}{\numberline {2.1}Конечная арифметика $Z_8$}{5}{subsection.0.2.1}%
+\contentsline {subsection}{\numberline {2.2}Арифметические операции}{5}{subsection.0.2.2}%
 \contentsline {subsubsection}{Сложение}{6}{section*.4}%
 \contentsline {subsubsection}{Умножение}{6}{section*.5}%
 \contentsline {subsubsection}{Вычитание}{7}{section*.6}%
 \contentsline {subsubsection}{Деление}{7}{section*.7}%
 \contentsline {subsubsection}{Отрицательные числа и операции с ними}{7}{section*.8}%
-\contentsline {subsection}{\numberline {2.3}Ограничения}{9}{subsection.0.2.3}%
+\contentsline {subsection}{\numberline {2.3}Ограничения}{8}{subsection.0.2.3}%
 \contentsline {section}{\numberline {3}Особенности реализации}{10}{section.0.3}%
 \contentsline {subsection}{\numberline {3.1}Реализация алгебраической логики}{10}{subsection.0.3.1}%
 \contentsline {subsection}{\numberline {3.2}Реализация консольного меню}{21}{subsection.0.3.2}%
@@ -21,4 +21,4 @@
 \contentsline {section}{Список литературы}{27}{chapter*.19}%
 \contentsline {section}{Приложение 1. Файл Z8.h}{28}{section*.20}%
 \contentsline {section}{Приложение 2. Файл Z8.cpp}{30}{section*.21}%
-\contentsline {section}{Приложение 3. Файл main.cpp}{41}{section*.22}%
+\contentsline {section}{Приложение 3. Файл main.cpp}{42}{section*.22}%

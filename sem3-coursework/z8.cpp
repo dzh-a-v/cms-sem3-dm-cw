@@ -189,7 +189,7 @@ std::string Z8Number::mulNumbers(const std::string& x, const std::string& y) {
     return res;
 }
 
-std::string Z8Number::divNumbers(const std::string& x, const std::string& y, bool oneIsNeg) {
+std::string Z8Number::divNumbers(const std::string& x, const std::string& y, bool firstIsNeg) {
     if (isEqual(y, "a")) {
         throw std::domain_error("Division by zero");
     }
@@ -205,7 +205,7 @@ std::string Z8Number::divNumbers(const std::string& x, const std::string& y, boo
         quotient = incNumber(quotient);
     }
 
-    if (oneIsNeg && !isEqual(remainder, "a")) {
+    if (firstIsNeg && !isEqual(remainder, "a")) {
         quotient = incNumber(quotient);
         remainder = subNumbers(y, remainder);
     }
@@ -218,8 +218,8 @@ std::string Z8Number::divNumbers(const std::string& x, const std::string& y, boo
     }
 }
 
-std::string Z8Number::divide(const Z8Number& divisor, bool oneIsNeg) const {
-    return divNumbers(digits, divisor.digits, oneIsNeg);
+std::string Z8Number::divide(const Z8Number& divisor, bool firstIsNeg) const {
+    return divNumbers(digits, divisor.digits, firstIsNeg);
 }
 
 Z8Number Z8Number::operator+(const Z8Number& o) const {
@@ -264,7 +264,9 @@ void calculate(const Z8Number& a, const Z8Number& b, std::string op) {
                 else result = (b * a).toString();
             }
             else if (op == "/") {
-                result = a.divide(b);
+                if (Z8Number::isEqual(a.toString(), "a") && Z8Number::isEqual(b.toString(), "a")) result = "[-ffffffff; ffffffff]";
+                else if (Z8Number::isEqual(b.toString(), "a")) result = "empty set";
+                else result = a.divide(b);
             }
             else {
                 std::cerr << "Unknown operator\n";
@@ -298,7 +300,8 @@ void calculate(const Z8Number& a, const Z8Number& b, std::string op) {
             }
             else if (op == "/") {
                 if (a == Z8Number("a")) result = a.divide(b);
-                else result = "-" + a.divide(b, true);
+                else if (a.isNegative) result = "-" + a.divide(b, true);
+                else result = "-" + a.divide(b);
             }
             else {
                 std::cerr << "Unknown operator\n";

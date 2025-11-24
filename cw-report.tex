@@ -1,3 +1,17 @@
+%TODO
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+
 \documentclass[14pt]{extreport}
 \usepackage{indentfirst}
 \usepackage[T2A]{fontenc}
@@ -137,13 +151,13 @@
 		
 		\section{Математическое описание}
 		
-		\subsection{Исходная структура — «малая» конечная арифметика}
+		\subsection{Конечная арифметика $Z_8$}
 		
-		Рассмотрим конечное множество
+		Рассмотрим нашу конечную арифметику
 		\[
 		Z_8 = \{a, b, c, d, e, f, g, h\},
 		\]
-		на котором задана операция «+1», определяющая правило перехода от элемента к следующему:
+		в которой задана операция «+1», определяющая правило перехода от элемента к следующему:
 		\[
 		\begin{array}{c|cccccccc}
 			x      & a & b & c & d & e & f & g & h \\ \hline
@@ -530,7 +544,7 @@ std::string Z8Number::mulNumbers(const std::string& x, const std::string& y) {
 			\textbf{Назначение:} выполненяет деление одного числа на другое.\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-std::string Z8Number::divNumbers(const std::string& x, const std::string& y, bool oneIsNeg) {
+std::string Z8Number::divNumbers(const std::string& x, const std::string& y, bool firstIsNeg) {
 	if (isEqual(y, "a")) {
 		throw std::domain_error("Division by zero");
 	}
@@ -546,7 +560,7 @@ std::string Z8Number::divNumbers(const std::string& x, const std::string& y, boo
 		quotient = incNumber(quotient);
 	}
 	
-	if (oneIsNeg && !isEqual(remainder, "a")) {
+	if (firstIsNeg && !isEqual(remainder, "a")) {
 		quotient = incNumber(quotient);
 		remainder = subNumbers(y, remainder);
 	}

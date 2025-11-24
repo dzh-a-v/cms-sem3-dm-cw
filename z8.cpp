@@ -50,11 +50,11 @@ bool Z8Number::isEqual(const std::string& a, const std::string& b) {
 void Z8Number::validate(const std::string& s) {
     if (s.empty()) throw std::invalid_argument("Empty number");
     if (s.size() > 8 && s[0] != '-' || s.size() > 9) throw std::invalid_argument("More than 8 digits");
-        for (char c : s) {
-            if (c != 'a' && c != 'b' && c != 'c' && c != 'd' &&
-                c != 'e' && c != 'f' && c != 'g' && c != 'h' && c != '-')
-                throw std::invalid_argument("Invalid character");
-        }
+    for (char c : s) {
+        if (c != 'a' && c != 'b' && c != 'c' && c != 'd' &&
+            c != 'e' && c != 'f' && c != 'g' && c != 'h' && c != '-')
+            throw std::invalid_argument("Invalid character");
+    }
 }
 
 Z8Number::Z8Number() : digits("a"), isNegative(false) {}
@@ -84,11 +84,13 @@ std::string Z8Number::incNumber(const std::string& num) {
         if (i == 0) { // carrying until no need to
             res = 'b' + res;
             if (res.size() > 8)
-                throw OverflowError();
+                throw std::overflow_error("Number exceeds 8 digits");
             break;
         }
         --i;
     }
+    if (normalize(res).size() > 8)
+        throw std::overflow_error("Number exceeds 8 digits");
     return normalize(res);
 }
 
@@ -147,6 +149,8 @@ std::string Z8Number::addNumbers(const std::string& x, const std::string& y) {
     while (!isEqual(counter, y)) {
         res = incNumber(res);
         counter = incNumber(counter);
+        if (normalize(res).size() > 8)
+            throw std::overflow_error("Number exceeds 8 digits");
     }
     return res;
 }
@@ -167,14 +171,25 @@ std::string Z8Number::mulNumbers(const std::string& x, const std::string& y) {
     if (isEqual(x, "a") || isEqual(y, "a")) return "a";
     std::string res = x;
     std::string counter = "b";
-    while (!isEqual(counter, y)) {
-        res = addNumbers(res, x);
-        counter = incNumber(counter);
+    if (isEqual(y, "ba")) res = res + "a";
+    else if (isEqual(y, "baa")) res = res + "aa";
+    else if (isEqual(y, "baaa")) res = res + "aaa";
+    else if (isEqual(y, "baaaa")) res = res + "aaaa";
+    else if (isEqual(y, "baaaaa")) res = res + "aaaaa";
+    else if (isEqual(y, "baaaaaa")) res = res + "aaaaaaa";
+    else if (isEqual(y, "baaaaaaa")) res = res + "aaaaaaa";
+    else {
+        while (!isEqual(counter, y)) {
+            res = addNumbers(res, x);
+            counter = incNumber(counter);
+        }
     }
+    if (normalize(res).size() > 8)
+        throw std::overflow_error("Number exceeds 8 digits");
     return res;
 }
 
-std::string Z8Number::divNumbers(const std::string& x, const std::string& y) {
+std::string Z8Number::divNumbers(const std::string& x, const std::string& y, bool firstIsNeg) {
     if (isEqual(y, "a")) {
         throw std::domain_error("Division by zero");
     }
@@ -190,16 +205,21 @@ std::string Z8Number::divNumbers(const std::string& x, const std::string& y) {
         quotient = incNumber(quotient);
     }
 
+    if (firstIsNeg && !isEqual(remainder, "a")) {
+        quotient = incNumber(quotient);
+        remainder = subNumbers(y, remainder);
+    }
+
     if (isEqual(remainder, "a")) {
         return quotient;
     }
     else {
-        return quotient + "." + remainder;
+        return quotient + "(" + remainder + ")";
     }
 }
 
-std::string Z8Number::divide(const Z8Number& divisor) const {
-    return divNumbers(digits, divisor.digits);
+std::string Z8Number::divide(const Z8Number& divisor, bool firstIsNeg) const {
+    return divNumbers(digits, divisor.digits, firstIsNeg);
 }
 
 Z8Number Z8Number::operator+(const Z8Number& o) const {
@@ -244,7 +264,9 @@ void calculate(const Z8Number& a, const Z8Number& b, std::string op) {
                 else result = (b * a).toString();
             }
             else if (op == "/") {
-                result = a.divide(b);
+                if (Z8Number::isEqual(a.toString(), "a") && Z8Number::isEqual(b.toString(), "a")) result = "[-ffffffff; ffffffff]";
+                else if (Z8Number::isEqual(b.toString(), "a")) result = "empty set";
+                else result = a.divide(b);
             }
             else {
                 std::cerr << "Unknown operator\n";
@@ -278,6 +300,7 @@ void calculate(const Z8Number& a, const Z8Number& b, std::string op) {
             }
             else if (op == "/") {
                 if (a == Z8Number("a")) result = a.divide(b);
+                else if (a.isNegative) result = "-" + a.divide(b, true);
                 else result = "-" + a.divide(b);
             }
             else {

@@ -12,7 +12,7 @@ public:
     Z8Number operator+(const Z8Number& other) const;
     Z8Number operator-(const Z8Number& other) const;
     Z8Number operator*(const Z8Number& other) const;
-    std::string divide(const Z8Number& divisor, bool oneIsNeg = false) const;
+    std::string divide(const Z8Number& divisor, bool firstIsNeg = false) const;
     Z8Number& operator=(const Z8Number& other);
 
     bool operator==(const Z8Number& other) const;
@@ -30,7 +30,7 @@ private:
     static std::string addNumbers(const std::string& x, const std::string& y);
     static std::string subNumbers(const std::string& x, const std::string& y);
     static std::string mulNumbers(const std::string& x, const std::string& y);
-    static std::string divNumbers(const std::string& x, const std::string& y, bool oneIsNeg = false);
+    static std::string divNumbers(const std::string& x, const std::string& y, bool firstIsNeg = false);
     static bool greaterOrEqual(const std::string& x, const std::string& y);
     friend bool greaterOrEqual(const Z8Number& x, const Z8Number& y);
     friend bool greater(const Z8Number& x, const Z8Number& y);
