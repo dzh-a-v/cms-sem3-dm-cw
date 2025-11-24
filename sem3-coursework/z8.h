@@ -38,7 +38,6 @@ private:
     static void validate(const std::string& s);
     static bool isEqual(const std::string& a, const std::string& b);
     friend void calculate(const Z8Number& a, const Z8Number& b, std::string op);
-    friend void calculate(const Z8Number& a, const Z8Number& b, std::string op, bool oneIsNeg);
 };
 
 class OverflowError : public std::overflow_error {

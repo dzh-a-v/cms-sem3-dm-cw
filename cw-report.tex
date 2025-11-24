@@ -216,7 +216,11 @@
 			\item При сложении вычитаем из модуля большего модуль меньшего; если \code{A} > \code{B}, приписываем минус в начале ответа, в противном случае нет.
 			\item При вычитании складываем модули чисел.
 			\item При умножении совершаем умножение и приписываеим минус.
-			\item При делении совершается деление и приписывается минус.
+			\item При делении:
+			\begin{itemize}[]
+				\item если остатка при делении нет, приписываем минус;
+				\item если остаток при делении есть, увеличиваем модуль частного на 1 и вычитаем из делителя текущий остаток.
+			\end{itemize}
 		\end{enumerate}
 		
 		\textbf{Если оба числа отрицательны:}
@@ -522,7 +526,7 @@ std::string Z8Number::mulNumbers(const std::string& x, const std::string& y) {
 			\textbf{Назначение:} выполненяет деление одного числа на другое.\\
 			\textbf{Код:}
 			\begin{lstlisting}[language=C++]
-std::string Z8Number::divNumbers(const std::string& x, const std::string& y) {
+std::string Z8Number::divNumbers(const std::string& x, const std::string& y, bool oneIsNeg) {
 	if (isEqual(y, "a")) {
 		throw std::domain_error("Division by zero");
 	}
@@ -538,11 +542,16 @@ std::string Z8Number::divNumbers(const std::string& x, const std::string& y) {
 		quotient = incNumber(quotient);
 	}
 	
+	if (oneIsNeg && !isEqual(remainder, "a")) {
+		quotient = incNumber(quotient);
+		remainder = subNumbers(y, remainder);
+	}
+	
 	if (isEqual(remainder, "a")) {
 		return quotient;
 	}
 	else {
-		return quotient + "." + remainder;
+		return quotient + "(" + remainder + ")";
 	}
 }
 			\end{lstlisting}
